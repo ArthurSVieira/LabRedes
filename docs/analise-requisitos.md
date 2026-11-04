@@ -1,10 +1,5 @@
 # Análise de Requisitos — Laboratório CT-12 (Sala 201) & OpenCloud
 
-> [!NOTE]
-> Este documento apresenta o levantamento de requisitos para o projeto do laboratório de informática do **Grupo de Pesquisa e Ensino de Engenharia Industrial (GPEI)** da UFES. A estrutura segue a metodologia *Top-Down* (Oppenheimer) para a parte de rede/aplicações e os conceitos de segurança e gerência (Stallings), tomando como base os dados reais do **Edital FEST nº 011/2025 (CT-12)**.
-
----
-
 ## 1. Definição Inicial do Escopo e Principais Objetivos
 
 ### 1.1 Escopo Físico e Público-Alvo
