@@ -1,9 +1,5 @@
 # Projeto Lógico — Laboratório CT-12 (Sala 201) & OpenCloud
 
-> [!NOTE]
-> Este documento detalha a arquitetura lógica da rede da **Sala 201 (CT-12)** para o **Grupo de Pesquisa e Ensino de Engenharia Industrial (GPEI)**. A modelagem foi construída e validada no **Cisco Packet Tracer**, dividindo a rede no modelo hierárquico de três camadas, isolando os ambientes por VLANs e estruturando o servidor **OpenCloud** em containers Docker.
-
----
 
 ## 1. Diagrama de Arquitetura de Rede em Três Camadas
 
