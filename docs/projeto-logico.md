@@ -14,10 +14,10 @@ A topologia abaixo foi montada no **Cisco Packet Tracer** para representar a sep
    - Recebe o link da UFES e faz o roteamento entre as VLANs internas (*Router-on-a-Stick*), além de atuar como servidor **DHCP**, **NAT** para saída à internet e **Firewall** aplicando as regras de controle de acesso (ACLs) entre as sub-redes.
 3. **Camada de Acesso (Switch Gerenciável 48 Portas PoE + 4 SFP/SFP+):**
    - Instalado no Rack de 24U da sala, conecta todos os dispositivos finais:
-     - **Portas 1 a 48 (RJ-45 Gigabit PoE):** Ligadas aos 2 Patch Panels de 24 portas para atender a **mesa do professor (`1202`)** e as **47 bancadas dos alunos (`1201` e `1203` a `1248`)**.
+     - **Portas 1 a 48 (RJ-45 Gigabit PoE):** Ligadas aos 2 Patch Panels de 24 portas para atender a **mesa do professor (`1202` — conectada ao Projetor de Teto via cabo HDMI embutido)** e as **47 bancadas dos alunos (`1201` e `1203` a `1248`)**.
      - **Porta SFP 1:** Usada para o uplink principal.
-     - **Porta SFP 2 (10 Gbps SFP+ / 1 Gbps):** Dedicada ao **Servidor Físico 1U do OpenCloud**, evitando gargalo quando os 47 alunos acessam arquivos ao mesmo tempo.
-     - **Porta SFP 3 (com Transceiver RJ-45):** Conecta o **49º ponto de rede (`WF01`)**, que fica no centro do forro mineral para o **Access Point Wi-Fi 6**.
+     - **Porta SFP 2 (10 Gbps SFP+ / 1 Gbps):** Dedicada ao **Servidor Físico 1U do OpenCloud** (protegido pelo firewall local `UFW` e orquestrando os containers na rede `opencloud-net`), evitando gargalo quando os 47 alunos acessam arquivos ao mesmo tempo.
+     - **Porta SFP 3 (com Transceiver RJ-45):** Conecta o **49º ponto de rede (`WF01`)**, que fica no centro do forro mineral para o **Access Point Wi-Fi 6** (atendendo dispositivos móveis e a **Impressora sem fio** do laboratório).
 
 ---
 
@@ -28,9 +28,9 @@ Para evitar que o tráfego das bancadas dos alunos se misture com a gerência do
 | VLAN / Enlace | Nome da VLAN | Sub-rede IPv4 | Máscara | Gateway Padrão | Faixa de Uso e Equipamentos Alocados |
 | :---: | :--- | :--- | :--- | :--- | :--- |
 | **Enlace WAN** | `UPLINK_UFES` | `10.0.0.0/30` | `255.255.255.252` | `10.0.0.1` | Link em fibra óptica entre o Core UFES (`10.0.0.1`) e o Roteador de Borda da Sala 201 (`10.0.0.2`). |
-| **VLAN 10** | `GERENCIA` | `192.168.10.0/24` | `255.255.255.0` | `192.168.10.1` | • **IP do Switch 48p:** `192.168.10.2`<br>• **Mesa do Professor (Ponto `1202`):** `192.168.10.10`<br>• Usada para administração dos ativos e docência. |
-| **VLAN 20** | `SERVIDORES` | `192.168.20.0/24` | `255.255.255.0` | `192.168.20.1` | • **Servidor Físico 1U OpenCloud (Porta SFP 2):** `192.168.20.10` (IP estático).<br>• Rede isolada (DMZ interna) exclusiva para o servidor. |
-| **VLAN 30** | `USUARIOS` | `192.168.30.0/24` | `255.255.255.0` | `192.168.30.1` | • **47 PCs dos Alunos (`1201`, `1203`–`1248`):** `192.168.30.11` a `192.168.30.57` (via DHCP).<br>• **Access Point Wi-Fi 6 (`WF01` na SFP 3) e Dispositivos Móveis:** `192.168.30.100` a `192.168.30.250` (via DHCP). |
+| **VLAN 10** | `GERENCIA` | `192.168.10.0/24` | `255.255.255.0` | `192.168.10.1` | • **IP do Switch 48p:** `192.168.10.2`<br>• **Mesa do Professor (Ponto `1202` + Projetor via HDMI):** `192.168.10.10`<br>• Usada para administração dos ativos e docência. |
+| **VLAN 20** | `SERVIDORES` | `192.168.20.0/24` | `255.255.255.0` | `192.168.20.1` | • **Servidor Físico 1U OpenCloud (Porta SFP 2):** `192.168.20.10` (IP estático).<br>• Rede isolada (DMZ interna) com **Firewall Host (`UFW`)** na entrada antes da rede Docker (`opencloud-net`). |
+| **VLAN 30** | `USUARIOS` | `192.168.30.0/24` | `255.255.255.0` | `192.168.30.1` | • **47 PCs dos Alunos (`1201`, `1203`–`1248`):** `192.168.30.11` a `192.168.30.57` (via DHCP).<br>• **Impressora do Laboratório (Wi-Fi `WF01`):** `192.168.30.50` (IP reservado).<br>• **Access Point Wi-Fi 6 (`WF01` na SFP 3) e Dispositivos Móveis:** `192.168.30.100` a `192.168.30.250` (via DHCP). |
 
 ---
 
@@ -47,13 +47,21 @@ O Roteador/Firewall de Borda controla o que pode passar de uma VLAN para outra. 
 | **05** | `VLAN 30 (Usuários)` | `Servidor OpenCloud`<br>(`192.168.20.10`) | `TCP 22` (SSH) e portas internas (`9200`, `9980`, `5232`) | ❌ **BLOQUEAR** | Garante que os alunos só acessem o servidor pela porta web segura (`443` do Traefik), bloqueando tentativas de login SSH ou acesso direto aos containers. |
 | **06** | `VLAN 10`, `VLAN 20` e `VLAN 30` | `Core UFES / Internet` | `TCP 80, 443` / `UDP 123` (NTP) | ✅ **PERMITIR** | Acesso à internet acadêmica da UFES, atualizações de pacotes Linux/Docker e sincronização de relógio (NTP). |
 
+### 3.1 Estratégia de Firewall em Duas Camadas (Rede + Host)
+
+Como a `VLAN 30` (Usuários) precisa se comunicar com a `VLAN 20` (Servidores) para que os alunos acessem o OpenCloud, o isolamento apenas em nível de VLAN (Camada 2) não impede que outras portas do servidor fiquem acessíveis após o roteamento Inter-VLAN. Além disso, colocar um firewall físico dedicado entre o Switch e o Servidor adicionaria custo desnecessário ao projeto e limitaria o link a `1 Gbps`, desperdiçando a porta **SFP+ 2 de 10 Gbps** do Switch.
+
+Para resolver isso mantendo o desempenho máximo do link SFP+, o projeto combina duas barreiras complementares:
+1. **ACLs no Roteador de Borda:** Filtram o tráfego logo no roteamento entre as VLANs, liberando apenas as portas `80/443` (Web) e `53` (DNS) da rede dos alunos para o servidor.
+2. **Firewall no próprio Servidor (`UFW / iptables`):** O Ubuntu Server mantém o firewall local ativo diretamente na interface de rede do host (fora do ambiente de containers), aceitando conexões SSH (`22/tcp`) apenas vindas da `VLAN 10` (`192.168.10.0/24`) e expondo exclusivamente as portas `80/443` do proxy `Traefik`, enquanto as portas internas dos serviços (`9200`, `9980`, `5232`) permanecem fechadas dentro da rede `opencloud-net` do Docker.
+
 ---
 
 ## 4. Arquitetura do Serviço de Software Livre (OpenCloud)
 
-Dentro do **Servidor Físico 1U Short-Depth (`192.168.20.10`)** instalado no Rack 24U da Sala 201, o sistema operacional base é o **Linux (Ubuntu Server LTS)** rodando **Docker** e **Docker Compose**.
+Dentro do **Servidor Físico 1U Short-Depth (`192.168.20.10`)** instalado no Rack 24U da Sala 201, o sistema operacional base é o **Linux (Ubuntu Server LTS)** com o **Firewall Host (`UFW`)** ativo na interface de entrada e rodando **Docker** e **Docker Compose**.
 
-Para manter a organização e a segurança, todos os serviços rodam isolados dentro de uma rede virtual interna do Docker chamada **`opencloud-net`**. Apenas o proxy reverso (`Traefik`) fica com as portas `80` e `443` abertas para a rede do laboratório.
+Para manter a organização e a segurança, os 4 serviços da aplicação rodam isolados dentro de uma rede virtual interna do Docker chamada **`opencloud-net`**. Apenas o proxy reverso (`Traefik`) recebe o tráfego HTTPS (`80/443`) autorizado pelo firewall do servidor.
 
 ### 4.1 Os 4 Containers da Pilha OpenCloud
 
@@ -70,16 +78,19 @@ Para manter a organização e a segurança, todos os serviços rodam isolados de
 flowchart TD
     Clients["💻 47 PCs Alunos (VLAN 30) / PC Professor (VLAN 10) / Wi-Fi WF01"]
     
-    subgraph Host["🖥️ Servidor Físico 1U Short-Depth (IP: 192.168.20.10 - Porta SFP 2)"]
-        subgraph Docker["Rede Virtual Interna Docker: opencloud-net"]
+    subgraph Host["🖥️ VLAN 20: Servidor Físico 1U Short-Depth (IP: 192.168.20.10 - Porta SFP 2)"]
+        UFW["🛡️ Firewall Host (UFW / iptables)<br/>Libera apenas HTTPS (80/443) e SSH restrito à VLAN 10"]
+        
+        subgraph Docker["🐳 Containers Docker Compose (Rede isolada: opencloud-net)"]
             Traefik["1. Traefik (Proxy Reverso & SSL/HTTPS - Portas 80/443)"]
-            OpenCloud["2. OpenCloud Core (opencloudeu/opencloud)<br/>• Login / IDP Embutido<br/>• Grupos: professores, pesquisadores, alunos<br/>• Spaces de Arquivos"]
-            Collabora["4. Collabora Online + WOPI<br/>(collabora/code + cs3org/wopiserver)<br/>• Edição simultânea (.xlsx, .docx, .pptx)"]
-            Radicale["3. Radicale (opencloudeu/radicale)<br/>• Calendários dos Grupos (CalDAV)"]
+            OpenCloud["2. OpenCloud Core (opencloudeu/opencloud :9200)<br/>• Login / IDP Embutido<br/>• Grupos: professores, pesquisadores, alunos<br/>• Spaces de Arquivos"]
+            Collabora["4. Collabora Online + WOPI (:9980)<br/>(collabora/code + cs3org/wopiserver)<br/>• Edição simultânea (.xlsx, .docx, .pptx)"]
+            Radicale["3. Radicale (opencloudeu/radicale :5232)<br/>• Calendários dos Grupos (CalDAV)"]
         end
     end
 
-    Clients -->|"HTTPS (Porta 443)"| Traefik
+    Clients -->|"Porta SFP 2"| UFW
+    UFW -->|"HTTPS (Porta 443)"| Traefik
     Traefik -->|"Tráfego Web / Arquivos"| OpenCloud
     Traefik -->|"Sessão WebSocket / Edição"| Collabora
     OpenCloud <-->|"Protocolo WOPI"| Collabora
