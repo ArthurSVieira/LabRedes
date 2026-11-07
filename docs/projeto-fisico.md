@@ -1,10 +1,5 @@
 # Projeto Físico — Laboratório CT-12 (Sala 201) & OpenCloud
 
-> [!NOTE]
-> Este documento apresenta o projeto físico e de cabeamento estruturado da **Sala 201 (Prédio CT-12 — UFES)** para o **Grupo de Pesquisa e Ensino de Engenharia Industrial (GPEI)**, seguindo as especificações do **Edital FEST nº 011/2025**. O mapeamento de cabos e cobertura Wi-Fi foi modelado no **TP-Link Omada Design Hub**.
-
----
-
 ## 1. Planta Baixa de Infraestrutura e Lançamento de Cabos
 
 A Sala 201 fica no **2º pavimento do CT-12** e possui área total de **72,63 m²** (`7,26 m × 10,06 m`), acomodando **48 posições nas bancadas** (47 computadores de alunos + 1 mesa do professor no ponto `1202`), espaço acessível para **PNE** e **1 Access Point Wi-Fi 6 no teto (`WF01`)**.
