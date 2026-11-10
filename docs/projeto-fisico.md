@@ -42,8 +42,8 @@ Como o rack tem `570 mm` de profundidade, o **Servidor Físico do OpenCloud** es
   ======================================================================
   [U24] [================ DIO / CHEGADA FIBRA ÓPTICA UFES ===============]
   [U23] [------------------ GUIA DE CABO HORIZONTAL 01 (1U) -------------]
-  [U22] [================= ROTEADOR / FIREWALL DE BORDA =================]
-  [U21] [====================== BANDEJA FIXA 01 (1U) ====================]
+  [U22] [=============== ROTEADOR DE BORDA (DISTRIBUIÇÃO) ===============]
+  [U21] [============= FIREWALL FÍSICO DEDICADO DE BORDA (1U) ===========]
   [U20] [------------------ GUIA DE CABO HORIZONTAL 02 (1U) -------------]
   [U19] [=========== PATCH PANEL 01 - 24P CAT.6 (PONTOS 1201-1224) ======]
   [U18] [------------------ GUIA DE CABO HORIZONTAL 03 (1U) -------------]
@@ -54,13 +54,13 @@ Como o rack tem `570 mm` de profundidade, o **Servidor Físico do OpenCloud** es
   [U13] [------------------ GUIA DE CABO HORIZONTAL 06 (1U) -------------]
   [U12] [======== SERVIDOR FÍSICO 1U SHORT-DEPTH (OPENCLOUD GPEI) =======]
   [U11] [------------------ GUIA DE CABO HORIZONTAL 07 (1U) -------------]
-  [U10] [====================== BANDEJA FIXA 02 (1U) ====================]
+  [U10] [====================== BANDEJA FIXA 01 (1U) ====================]
   [U09] [------------------ GUIA DE CABO HORIZONTAL 08 (1U) -------------]
-  [U08] [=================== PLACA CEGA DE FECHAMENTO 01 ================]
-  [U07] [=================== PLACA CEGA DE FECHAMENTO 02 ================]
-  [U06] [=================== PLACA CEGA DE FECHAMENTO 03 ================]
-  [U05] [=================== PLACA CEGA DE FECHAMENTO 04 ================]
-  [U04] [=================== PLACA CEGA DE FECHAMENTO 05 ================]
+  [U08] [====================== BANDEJA FIXA 02 (1U) ====================]
+  [U07] [=================== PLACA CEGA DE FECHAMENTO 01 ================]
+  [U06] [=================== PLACA CEGA DE FECHAMENTO 02 ================]
+  [U05] [=================== PLACA CEGA DE FECHAMENTO 03 ================]
+  [U04] [=================== PLACA CEGA DE FECHAMENTO 04 ================]
   [U03] [================= CALHA DE 6 TOMADAS 20A (PDU) =================]
   [U02] [     NO-BREAK (UPS) SENOIDAL ONLINE DUPLA CONVERSÃO (2U)        ] (2U)
   [U01] [________________________________________________________________]
@@ -69,14 +69,14 @@ Como o rack tem `570 mm` de profundidade, o **Servidor Físico do OpenCloud** es
   ======================================================================
                     ::: ORGANIZADORES LATERAIS :::
   (Passam verticalmente da base ao topo nas laterais esquerda e direita,
-   acomodando também as 3 Placas Cegas 1U sobressalentes de reserva do kit)
+   acomodando também as 4 Placas Cegas 1U sobressalentes de reserva do kit)
 ```
 
-### 2.2 Detalhe de Ligação no Switch (`U17`)
-Para conectar todos os **49 pontos da sala** mais o **Servidor OpenCloud** e o **Link da UFES** usando apenas 1 Switch de 48 portas:
+### 2.2 Detalhe de Ligação no Switch (`U17`) e Topo do Rack
+Para conectar todos os **49 pontos da sala** mais o **Servidor OpenCloud** e a **Borda da UFES** usando apenas 1 Switch de 48 portas:
 - **Portas 1 a 24 (RJ-45 PoE):** Ligadas ao **Patch Panel 01 (`U19`)** com patch cords Cat.6 de `2,50 m` (Pontos `1201` a `1224`, incluindo o PC do Professor no `1202`).
 - **Portas 25 a 48 (RJ-45 PoE):** Ligadas ao **Patch Panel 02 (`U15`)** com patch cords Cat.6 de `2,50 m` (Pontos `1225` a `1248`).
-- **Porta Uplink SFP 1 (Fibra):** Recebe o link óptico vindo do **DIO (`U24`)** / **Roteador de Borda (`U22`)**.
+- **Porta Uplink SFP 1:** Recebe o link vindo do topo do rack: a fibra da UFES chega no **DIO (`U24`)**, passa pelo **Roteador de Borda (`U22`)** e pelo **Firewall Físico Dedicado (`U21`)**, descendo filtrada para o Switch.
 - **Porta Uplink SFP 2 (10 Gbps SFP+ / 1 Gbps):** Ligada direto ao **Servidor Físico 1U OpenCloud (`U12`)**.
 - **Porta Uplink SFP 3 (Transceiver SFP RJ-45):** Conecta o **49º cabo Cat.6** que vai direto pelo forro até o **Access Point Wi-Fi 6 (`WF01`)** no centro da sala.
 
@@ -117,3 +117,29 @@ Abaixo está o resumo dos resultados do lote de certificação da Sala 201 (cons
 | **`1237` a `1248`** | `PP02-P13..P24` | `10,5 m – 21,5 m` | `5,8 – 10,4 dB` | `46,2 – 50,5 dB` | `29,4 – 34,0 dB` | `1-8 OK` | ✅ **PASS (12/12)** |
 | **`WF01` (Teto)** | `SW-SFP3` | `13,0 m` | `6,8 dB` | `49,0 dB` | `33,2 dB` | `1-8 OK (PoE)` | ✅ **PASS** |
 | **TOTAL** | **49 Pontos** | **689,00 m (Total)** | **Dentro do limite** | **Margem > 7 dB** | **Margem > 9 dB** | **100% T568A** | ✅ **49/49 APROVADOS** |
+
+---
+
+## 4. Inventário de Ativos Críticos, Responsáveis e Plano de Recuperação (Recovery)
+
+Seguindo as boas práticas de documentação operacional de infraestrutura de TI (rastreabilidade de ativos, responsáveis por escalação e recuperação de desastres), a tabela abaixo consolida os equipamentos críticos da Sala 201:
+
+### 4.1 Inventário de Ativos Principais e Escalação
+| Ativo / Equipamento | Posição Físico / Local | IP de Gerência / Rede | VLAN | Responsável / Escalação |
+| :--- | :---: | :---: | :---: | :--- |
+| **Roteador de Borda** | Rack 24U — `U22` | `10.0.0.2` / `192.168.10.1` | `WAN` / `VLAN 10` | STI/UFES (Nível 2) + Coordenação Lab GPEI |
+| **Firewall Físico de Borda** | Rack 24U — `U21` | `192.168.10.3` | `VLAN 10` | Coordenação Lab GPEI / Administrador da Rede |
+| **Switch 48p PoE + 4 SFP/SFP+** | Rack 24U — `U17` | `192.168.10.2` | `VLAN 10` | Coordenação Lab GPEI / Bolsistas de TI |
+| **Servidor Físico 1U OpenCloud** | Rack 24U — `U12` | `192.168.20.10` | `VLAN 20` | Coordenação Lab GPEI / Bolsistas de TI |
+| **NoBreak Senoidal Online 2U** | Rack 24U — `U01–U02` | Monitoramento USB/Serial no Servidor | — | Manutenção Predial CT-12 / Lab GPEI |
+| **Access Point Wi-Fi 6 (`WF01`)** | Centro do Teto (Forro) | `192.168.30.2` (ou Gerência) | `VLAN 30` | Bolsistas de TI do Lab GPEI |
+| **Desktop do Professor + Projetor** | Mesa `1202` + Teto (`B13`) | `192.168.10.10` | `VLAN 10` | Bolsistas de TI do Lab GPEI |
+| **Impressora do Laboratório** | Bancada Apoio (Wi-Fi) | `192.168.30.50` | `VLAN 30` | Bolsistas de TI do Lab GPEI |
+
+### 4.2 Procedimento de Backup, Manutenção e Recovery (Continuidade)
+1. **Queda de Energia Elétrica:** O **NoBreak Senoidal Online de 2U (`U01–U02`)** mantém o Roteador, o Firewall Físico, o Switch PoE (junto com o AP `WF01`) e o Servidor OpenCloud operando por até **30 minutos**, realizando o desligamento seguro (*graceful shutdown*) do Ubuntu Server caso a falta de energia se prolongue.
+2. **Falha de Disco no Servidor:** Os dados dos *Spaces* do OpenCloud e calendários do Radicale ficam armazenados em **2 discos SSD NVMe em RAID 1 (espelhamento)**. Se um SSD apresentar defeito, o servidor continua funcionando normalmente pelo segundo disco sem perda de arquivos.
+3. **Backup de Configurações e Infraestrutura como Código (IaC):**
+   - Toda a configuração da pilha de software livre (`docker-compose.yml`, variáveis e script `setup-server.sh`) fica versionada no repositório oficial do projeto no **GitHub** (pasta `/iac`), permitindo recriar o ambiente completo em poucos minutos (**RTO < 30 minutos**).
+   - Os arquivos de configuração das VLANs e ACLs do Switch, Roteador e Firewall são exportados e salvos a cada alteração na pasta de gerência do laboratório.
+
