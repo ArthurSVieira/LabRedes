@@ -69,9 +69,9 @@ ufw default allow outgoing
 # Libera SSH (porta 22) para administração remota (VLAN 10 / AWS SSH)
 ufw allow 22/tcp comment 'SSH Gerencia'
 # Libera apenas HTTP (80) e HTTPS (443) para o proxy reverso Traefik
-ufw allow 80/tcp comment 'Traefik HTTP Redirect'
+ufw allow 80/tcp comment 'Traefik HTTP Redirect e ACME Let_s Encrypt'
 ufw allow 443/tcp comment 'Traefik HTTPS OpenCloud'
-# As portas internas (9200, 9980, 5232) ficam bloqueadas no host
+# As portas internas (9200, 9980, 5232, 1234) ficam bloqueadas no host
 ufw --force enable
 echo "  -> Firewall UFW ativo (Portas 22, 80 e 443 liberadas)."
 
@@ -79,35 +79,60 @@ echo "  -> Firewall UFW ativo (Portas 22, 80 e 443 liberadas)."
 # PASSO 4: Detectar IP da Máquina (AWS Público ou LAN Sala 201) e criar .env
 # ------------------------------------------------------------------------------
 echo "[4/5] Detectando endereço IP para configurar o domínio (.nip.io)..."
-# Tenta detectar IP público (caso esteja rodando em teste na AWS EC2);
-# se não houver IP público direto, usa o IP local da placa de rede (ex: 192.168.20.10)
-DETECTED_IP=$(curl -s --max-time 3 https://checkip.amazonaws.com || hostname -I | awk '{print $1}')
-DETECTED_IP=$(echo "$DETECTED_IP" | tr -d '[:space:]')
+PUBLIC_IP=$(curl -s --max-time 3 https://checkip.amazonaws.com | tr -d '[:space:]' || true)
+LOCAL_IP=$(hostname -I | awk '{print $1}' | tr -d '[:space:]')
 
-if [ -z "$DETECTED_IP" ]; then
-  DETECTED_IP="192.168.20.10"
+if [ -n "$PUBLIC_IP" ]; then
+  DETECTED_IP="$PUBLIC_IP"
+  TRAEFIK_SERVICES_TLS_CONFIG="tls.certresolver=letsencrypt"
+  echo "  -> IP Público detectado: ${DETECTED_IP} (Certificado Let's Encrypt ativado)"
+else
+  DETECTED_IP="${LOCAL_IP:-192.168.20.10}"
+  TRAEFIK_SERVICES_TLS_CONFIG="tls=true"
+  echo "  -> IP Local detectado: ${DETECTED_IP} (Modo LAN interna)"
 fi
 
 OC_DOMAIN="opencloud.${DETECTED_IP}.nip.io"
-BASE_IP_DOMAIN="${DETECTED_IP}.nip.io"
-OC_ADMIN_PASSWORD="${OC_ADMIN_PASSWORD:-Gpei@Ufes2025!}"
+COLLABORA_DOMAIN="collabora.${DETECTED_IP}.nip.io"
+INITIAL_ADMIN_PASSWORD="${INITIAL_ADMIN_PASSWORD:-Gpei@Ufes2025!}"
 
 cat > "$SCRIPT_DIR/.env" <<EOF
 # Arquivo gerado automaticamente pelo setup-server.sh
 DETECTED_IP=${DETECTED_IP}
-BASE_IP_DOMAIN=${BASE_IP_DOMAIN}
 OC_DOMAIN=${OC_DOMAIN}
-OC_ADMIN_PASSWORD=${OC_ADMIN_PASSWORD}
-WOPI_SECRET=GpeiWopiSecret2025
+COLLABORA_DOMAIN=${COLLABORA_DOMAIN}
+INITIAL_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD}
+INSECURE=true
+TRAEFIK_SERVICES_TLS_CONFIG=${TRAEFIK_SERVICES_TLS_CONFIG}
+TRAEFIK_ACME_MAIL=arthurssivieira@gmail.com
 EOF
 
-echo "  -> IP detectado: ${DETECTED_IP}"
-echo "  -> Domínio configurado: https://${OC_DOMAIN}"
+chmod +x "$SCRIPT_DIR/config/traefik/docker-entrypoint-override.sh"
+
+echo "  -> Domínio OpenCloud: https://${OC_DOMAIN}"
+echo "  -> Domínio Collabora: https://${COLLABORA_DOMAIN}"
 
 # ------------------------------------------------------------------------------
-# PASSO 5: Subir os Containers do Ecossistema OpenCloud via Docker Compose
+# PASSO 5: Liberar Portas 80/443, Atualizar Domínio e Subir os Containers
 # ------------------------------------------------------------------------------
-echo "[5/5] Baixando imagens e iniciando os containers na rede 'opencloud-net'..."
+echo "[5/5] Preparando ambiente Docker e liberando portas 80/443..."
+
+# Para eventuais servidores web locais (Apache/Nginx) que estejam ocupando a porta 80/443
+systemctl stop apache2 nginx caddy 2>/dev/null || true
+
+# Para containers anteriores (inclusive de outros projetos na máquina) e remove
+# o volume antigo de config do OpenCloud caso o IP da AWS tenha mudado
+RUNNING_CONTAINERS=$(docker ps -q)
+if [ -n "$RUNNING_CONTAINERS" ]; then
+  echo "  -> Parando containers em execução para liberar as portas 80 e 443..."
+  docker stop $RUNNING_CONTAINERS >/dev/null 2>&1 || true
+fi
+
+docker compose down >/dev/null 2>&1 || true
+# Remove o volume de config antigo do OpenCloud para garantir que o novo OC_DOMAIN seja registrado no IDP
+docker volume rm iac_opencloud-config >/dev/null 2>&1 || true
+
+echo "  -> Subindo a pilha OpenCloud 9 + Collabora + Radicale + Yjs + Traefik..."
 docker compose up -d
 
 echo ""
@@ -115,12 +140,12 @@ echo "======================================================================"
 echo " ✅ IMPLANTAÇÃO CONCLUÍDA COM SUCESSO!"
 echo "======================================================================"
 echo " 🌐 Acesse o OpenCloud no navegador: https://${OC_DOMAIN}"
-echo " 📅 Rota do Calendário (Radicale):   https://${OC_DOMAIN}/caldav"
-echo " 📄 Collabora Online (Edição Web):   https://collabora.${BASE_IP_DOMAIN}"
+echo " 📅 Rota do Calendário (Radicale):   https://${OC_DOMAIN}/caldav/"
+echo " 📄 Collabora Online (Edição Web):   https://${COLLABORA_DOMAIN}"
 echo "----------------------------------------------------------------------"
 echo " 👤 Usuário Administrador: admin"
-echo " 🔑 Senha Inicial:         ${OC_ADMIN_PASSWORD}"
+echo " 🔑 Senha Inicial:         ${INITIAL_ADMIN_PASSWORD}"
 echo "----------------------------------------------------------------------"
-echo " 💡 Nota: Como o certificado TLS inicial é autoassinado pelo Traefik,"
-echo "    basta clicar em 'Avançado -> Prosseguir' no primeiro acesso pelo navegador."
+echo " 💡 Aguarde cerca de 15 segundos no primeiro acesso para o Traefik"
+echo "    emitir o certificado HTTPS válido junto ao Let's Encrypt!"
 echo "======================================================================"

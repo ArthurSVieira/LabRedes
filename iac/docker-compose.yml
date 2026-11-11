@@ -1,66 +1,101 @@
 # ==============================================================================
 # Docker Compose — Ecossistema OpenCloud (Laboratório CT-12 Sala 201 - GPEI)
+# Baseado na distribuição oficial opencloud-compose (OpenCloud 9.0.0)
 # ==============================================================================
-# Arquitetura em 4 serviços isolados na rede interna 'opencloud-net':
-#   1. traefik     -> Proxy Reverso de borda e terminação SSL/TLS (HTTPS 80/443)
-#   2. opencloud   -> Núcleo em Go (database-less), IDP embutido e Spaces (GPEI)
+# Arquitetura em microsserviços isolados na rede interna 'opencloud-net':
+#   1. traefik     -> Proxy Reverso de borda e terminação TLS/Let's Encrypt (80/443)
+#   2. opencloud   -> Núcleo em Go (database-less), IDP, Spaces RBAC e WOPI Server
 #   3. radicale    -> Servidor de Calendário e Contatos (CalDAV/CardDAV)
-#   4. collabora   -> Edição simultânea no navegador (.xlsx, .docx, .pptx) + WOPI
+#   4. collabora   -> Edição simultânea no navegador (.xlsx, .docx, .pptx) + Proof Key
+#   5. yjs         -> Sincronização colaborativa WebSockets em tempo real
 # ==============================================================================
 
 services:
   # ----------------------------------------------------------------------------
-  # 1. TRAEFIK — Proxy Reverso e Terminação SSL/HTTPS (Único exposto na borda)
+  # 1. TRAEFIK — Proxy Reverso e Terminação SSL/HTTPS (Let's Encrypt ACME)
   # ----------------------------------------------------------------------------
   traefik:
-    image: traefik:v2.11
+    image: traefik:v3.7.16
     container_name: gpei-traefik
-    restart: unless-stopped
-    command:
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
-      - "--entrypoints.websecure.address=:443"
-      - "--serversTransport.insecureSkipVerify=true"
+    restart: always
+    networks:
+      opencloud-net:
+        aliases:
+          - ${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}
+          - ${COLLABORA_DOMAIN:-collabora.192.168.20.10.nip.io}
+    entrypoint: ["/bin/sh", "/opt/traefik/bin/docker-entrypoint-override.sh"]
+    environment:
+      - "TRAEFIK_SERVICES_TLS_CONFIG=${TRAEFIK_SERVICES_TLS_CONFIG:-tls.certresolver=letsencrypt}"
+      - "TRAEFIK_ACME_MAIL=${TRAEFIK_ACME_MAIL:-arthurssivieira@gmail.com}"
+      - "TRAEFIK_ACME_CASERVER=${TRAEFIK_ACME_CASERVER:-https://acme-v02.api.letsencrypt.org/directory}"
+      - "TRAEFIK_LOG_LEVEL=${TRAEFIK_LOG_LEVEL:-ERROR}"
+      - "TRAEFIK_ACCESS_LOG=${TRAEFIK_ACCESS_LOG:-false}"
+      - "TRAEFIK_PORT_HTTP=80"
+      - "TRAEFIK_PORT_HTTPS=443"
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - opencloud-net
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./config/traefik/docker-entrypoint-override.sh:/opt/traefik/bin/docker-entrypoint-override.sh:ro"
+      - "traefik-certs:/certs"
 
   # ----------------------------------------------------------------------------
-  # 2. OPENCLOUD CORE — Nuvem Privada (Go / Database-less / IDP / Spaces RBAC)
+  # 2. OPENCLOUD CORE — Nuvem Privada (Go / Database-less / IDP / WOPI Server)
   # ----------------------------------------------------------------------------
   opencloud:
-    image: opencloudeu/opencloud:latest
+    image: opencloudeu/opencloud-rolling:9.0.0
     container_name: gpei-opencloud
-    restart: unless-stopped
+    user: "1000:1000"
+    restart: always
+    networks:
+      - opencloud-net
     entrypoint:
       - /bin/sh
-    command: ["-c", "opencloud init --insecure true || true; opencloud server"]
+    command: ["-c", "opencloud init || true; opencloud server"]
     environment:
-      - OC_URL=https://${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}
-      - OC_LOG_LEVEL=warn
-      - OC_INSECURE=true
-      - PROXY_TLS=false
-      - PROXY_HTTP_ADDR=0.0.0.0:9200
-      - IDM_CREATE_DEMO_USERS=false
-      - IDM_ADMIN_PASSWORD=${OC_ADMIN_PASSWORD:-Gpei@Ufes2025!}
+      OC_URL: https://${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}
+      OC_LOG_LEVEL: info
+      PROXY_TLS: "false"
+      OC_INSECURE: "${INSECURE:-true}"
+      IDM_CREATE_DEMO_USERS: "false"
+      IDM_ADMIN_PASSWORD: "${INITIAL_ADMIN_PASSWORD:-Gpei@Ufes2025!}"
+      FRONTEND_ARCHIVER_MAX_SIZE: "10000000000"
+      PROXY_CSP_CONFIG_FILE_LOCATION: /etc/opencloud/csp.yaml
+      OC_PASSWORD_POLICY_BANNED_PASSWORDS_LIST: banned-password-list.txt
+      OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD: "true"
+      # Serviço WOPI (collaboration) embutido no processo principal do OpenCloud 9
+      COLLABORA_DOMAIN: ${COLLABORA_DOMAIN:-collabora.192.168.20.10.nip.io}
+      OC_ADD_RUN_SERVICES: "collaboration"
+      FRONTEND_APP_HANDLER_SECURE_VIEW_APP_ADDR: eu.opencloud.api.collaboration
+      GRAPH_AVAILABLE_ROLES: "b1e2218d-eef8-4d4c-b82d-0f1a1b48f3b5,a8d5fe5e-96e3-418d-825b-534dbdf22b99,fb6c3e19-e378-47e5-b277-9732f9de6e21,58c63c02-1d89-4572-916a-870abc5a1b7d,2d00ce52-1fc2-4dbc-8b95-a73b73395f5a,1c996275-f1c9-4e71-abdf-a42f6495e960,312c0871-5ef7-4b3a-85b6-0e4074c64049,aa97fe03-7980-45ac-9e50-b325749fd7e6"
+      COLLABORATION_WOPI_SRC: https://${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}
+      COLLABORATION_APP_NAME: "CollaboraOnline"
+      COLLABORATION_APP_PRODUCT: "Collabora"
+      COLLABORATION_APP_ADDR: https://${COLLABORA_DOMAIN:-collabora.192.168.20.10.nip.io}
+      COLLABORATION_APP_ICON: https://${COLLABORA_DOMAIN:-collabora.192.168.20.10.nip.io}/favicon.ico
+      COLLABORATION_APP_INSECURE: "${INSECURE:-true}"
+      COLLABORATION_CS3API_DATAGATEWAY_INSECURE: "${INSECURE:-true}"
+      WEB_OPTION_YJS_SERVER_URL: wss://${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}/yjs
     volumes:
+      - ./config/opencloud/csp.yaml:/etc/opencloud/csp.yaml:ro
+      - ./config/opencloud/apps.yaml:/etc/opencloud/apps.yaml:ro
+      - ./config/opencloud/proxy.yaml:/etc/opencloud/proxy.yaml:ro
+      - ./config/opencloud/banned-password-list.txt:/etc/opencloud/banned-password-list.txt:ro
       - opencloud-config:/etc/opencloud
       - opencloud-data:/var/lib/opencloud
     labels:
       - "traefik.enable=true"
+      - "traefik.http.middlewares.hsts-header.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.hsts-header.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.hsts-header.headers.stsPreload=true"
+      - "traefik.http.middlewares.hsts-header.headers.forceSTSHeader=true"
+      - "traefik.http.routers.opencloud.entrypoints=https"
       - "traefik.http.routers.opencloud.rule=Host(`${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}`)"
-      - "traefik.http.routers.opencloud.entrypoints=websecure"
-      - "traefik.http.routers.opencloud.tls=true"
+      - "traefik.http.routers.opencloud.service=opencloud"
+      - "traefik.http.routers.opencloud.middlewares=hsts-header"
       - "traefik.http.services.opencloud.loadbalancer.server.port=9200"
-    networks:
-      - opencloud-net
+      - "traefik.http.routers.opencloud.${TRAEFIK_SERVICES_TLS_CONFIG:-tls.certresolver=letsencrypt}"
 
   # ----------------------------------------------------------------------------
   # 3. RADICALE — Servidor de Calendário e Contatos (CalDAV / CardDAV)
@@ -68,51 +103,92 @@ services:
   radicale:
     image: tomsquest/docker-radicale:latest
     container_name: gpei-radicale
-    restart: unless-stopped
+    restart: always
+    networks:
+      - opencloud-net
     environment:
       - TAKE_FILE_OWNERSHIP=false
     volumes:
-      - radicale-data:/data
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.radicale.rule=Host(`${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}`) && PathPrefix(`/caldav`)"
-      - "traefik.http.routers.radicale.entrypoints=websecure"
-      - "traefik.http.routers.radicale.tls=true"
-      - "traefik.http.services.radicale.loadbalancer.server.port=5232"
-    networks:
-      - opencloud-net
+      - ./config/radicale/config:/config/config:ro
+      - radicale-data:/var/lib/radicale/collections
 
   # ----------------------------------------------------------------------------
-  # 4. COLLABORA ONLINE (+ WOPI) — Edição Colaborativa em Tempo Real
+  # 4. COLLABORA ONLINE (+ WOPI Proof Key + Yjs) — Edição Colaborativa Web
   # ----------------------------------------------------------------------------
+  collabora-proof-key:
+    image: alpine/openssl:3.5.9
+    container_name: gpei-collabora-proof-key
+    entrypoint: ["/bin/sh"]
+    command:
+      - -ec
+      - |
+        if [ ! -s /proof/proof_key ]; then
+          openssl genrsa -traditional -out /proof/proof_key.tmp 4096
+          chown 1001:1001 /proof/proof_key.tmp
+          chmod 400 /proof/proof_key.tmp
+          mv /proof/proof_key.tmp /proof/proof_key
+          echo "WOPI proof key generated"
+        else
+          echo "WOPI proof key already exists"
+        fi
+    volumes:
+      - collabora-proof-key:/proof
+    restart: "no"
+
   collabora:
-    image: collabora/code:latest
+    image: collabora/code:26.04.5.2.1
     container_name: gpei-collabora
-    restart: unless-stopped
+    restart: always
+    networks:
+      - opencloud-net
+    depends_on:
+      collabora-proof-key:
+        condition: service_completed_successfully
     environment:
-      - aliasgroup1=https://${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}:443
-      - extra_params=--o:ssl.enable=false --o:ssl.termination=true
-      - username=admin
-      - password=${OC_ADMIN_PASSWORD:-Gpei@Ufes2025!}
+      aliasgroup1: https://${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}
+      extra_params: >
+        --o:ssl.enable=false
+        --o:ssl.ssl_verification=false
+        --o:ssl.termination=true
+        --o:welcome.enable=false
+        --o:net.frame_ancestors=${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}
+        --o:net.lok_allow.host[14]=${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}
+        --o:home_mode.enable=false
+      username: admin
+      password: "${INITIAL_ADMIN_PASSWORD:-Gpei@Ufes2025!}"
     cap_add:
-      - MKNOD
+      - SYS_ADMIN
+    security_opt:
+      - seccomp=unconfined
+      - apparmor:unconfined
+    volumes:
+      - type: volume
+        source: collabora-proof-key
+        target: /etc/coolwsd/proof_key
+        read_only: true
+        volume:
+          subpath: proof_key
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.collabora.rule=Host(`collabora.${BASE_IP_DOMAIN:-192.168.20.10.nip.io}`)"
-      - "traefik.http.routers.collabora.entrypoints=websecure"
-      - "traefik.http.routers.collabora.tls=true"
+      - "traefik.http.routers.collabora.entrypoints=https"
+      - "traefik.http.routers.collabora.rule=Host(`${COLLABORA_DOMAIN:-collabora.192.168.20.10.nip.io}`)"
+      - "traefik.http.routers.collabora.${TRAEFIK_SERVICES_TLS_CONFIG:-tls.certresolver=letsencrypt}"
+      - "traefik.http.routers.collabora.service=collabora"
+      - "traefik.http.routers.collabora.middlewares=hsts-header"
       - "traefik.http.services.collabora.loadbalancer.server.port=9980"
-    networks:
-      - opencloud-net
 
-  wopiserver:
-    image: cs3org/wopiserver:latest
-    container_name: gpei-wopiserver
-    restart: unless-stopped
-    environment:
-      - WOPI_IOPSECRET=${WOPI_SECRET:-GpeiWopiSecret2025}
+  yjs:
+    image: opencloudeu/yjs:1.1.1
+    container_name: gpei-yjs
+    user: "1000:1000"
+    restart: always
     networks:
       - opencloud-net
+    environment:
+      PORT: "1234"
+      OPENCLOUD_URL: "http://opencloud:9200"
+      SHUTDOWN_GRACE_PERIOD_MS: "15000"
+    stop_grace_period: 20s
 
 # ==============================================================================
 # REDE INTERNA ISOLADA E VOLUMES PERSISTENTES (EM RAID 1 NO HOST)
@@ -123,6 +199,8 @@ networks:
     driver: bridge
 
 volumes:
+  traefik-certs:
   opencloud-config:
   opencloud-data:
   radicale-data:
+  collabora-proof-key:
