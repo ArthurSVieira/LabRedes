@@ -1,0 +1,4 @@
+# Arquivos gerados automaticamente pelo setup-server.sh
+iac/.env
+iac/.last_domain
+.DS_Store

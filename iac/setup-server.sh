@@ -128,9 +128,19 @@ if [ -n "$RUNNING_CONTAINERS" ]; then
   docker stop $RUNNING_CONTAINERS >/dev/null 2>&1 || true
 fi
 
-docker compose down >/dev/null 2>&1 || true
-# Remove o volume de config antigo do OpenCloud para garantir que o novo OC_DOMAIN seja registrado no IDP
-docker volume rm iac_opencloud-config >/dev/null 2>&1 || true
+# Verifica se o domínio mudou em relação à execução anterior
+PREV_DOMAIN=""
+if [ -f "$SCRIPT_DIR/.last_domain" ]; then
+  PREV_DOMAIN=$(cat "$SCRIPT_DIR/.last_domain")
+fi
+
+if [ -n "$PREV_DOMAIN" ] && [ "$PREV_DOMAIN" != "$OC_DOMAIN" ]; then
+  echo "  -> Mudança de IP/Domínio detectada ($PREV_DOMAIN -> $OC_DOMAIN). Reinicializando volumes do IDP..."
+  docker compose down -v >/dev/null 2>&1 || true
+else
+  docker compose down >/dev/null 2>&1 || true
+fi
+echo "$OC_DOMAIN" > "$SCRIPT_DIR/.last_domain"
 
 echo "  -> Subindo a pilha OpenCloud 9 + Collabora + Radicale + Yjs + Traefik..."
 docker compose up -d
