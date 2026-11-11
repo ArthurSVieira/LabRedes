@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # Script de Provisionamento Automatizado (IaC) — Servidor OpenCloud GPEI
-# Laboratório de Informática CT-12 (Sala 201) — UFES
+# Laboratório de Informática CT-12 (Sala 201) — GPEI
 # ==============================================================================
 # Este script configura um servidor Ubuntu Server LTS do zero (seja o Servidor
 # Físico 1U Short-Depth na Sala 201 ou uma instância EC2 na AWS para testes):
@@ -94,7 +94,7 @@ fi
 
 OC_DOMAIN="opencloud.${DETECTED_IP}.nip.io"
 COLLABORA_DOMAIN="collabora.${DETECTED_IP}.nip.io"
-INITIAL_ADMIN_PASSWORD="${INITIAL_ADMIN_PASSWORD:-Gpei@Ufes2025!}"
+INITIAL_ADMIN_PASSWORD="${INITIAL_ADMIN_PASSWORD:-Gpei@Cloud2025!}"
 
 cat > "$SCRIPT_DIR/.env" <<EOF
 # Arquivo gerado automaticamente pelo setup-server.sh

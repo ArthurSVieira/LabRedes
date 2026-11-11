@@ -59,7 +59,7 @@ services:
       PROXY_TLS: "false"
       OC_INSECURE: "${INSECURE:-true}"
       IDM_CREATE_DEMO_USERS: "false"
-      IDM_ADMIN_PASSWORD: "${INITIAL_ADMIN_PASSWORD:-Gpei@Ufes2025!}"
+      IDM_ADMIN_PASSWORD: "${INITIAL_ADMIN_PASSWORD:-Gpei@Cloud2025!}"
       FRONTEND_ARCHIVER_MAX_SIZE: "10000000000"
       PROXY_CSP_CONFIG_FILE_LOCATION: /etc/opencloud/csp.yaml
       OC_PASSWORD_POLICY_BANNED_PASSWORDS_LIST: banned-password-list.txt
@@ -155,7 +155,7 @@ services:
         --o:net.lok_allow.host[14]=${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}
         --o:home_mode.enable=false
       username: admin
-      password: "${INITIAL_ADMIN_PASSWORD:-Gpei@Ufes2025!}"
+      password: "${INITIAL_ADMIN_PASSWORD:-Gpei@Cloud2025!}"
     cap_add:
       - SYS_ADMIN
     security_opt:
