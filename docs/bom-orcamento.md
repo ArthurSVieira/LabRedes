@@ -1,25 +1,28 @@
 # BOM (Bill of Materials) e Orçamento Estimado — Sala 201 (CT-12)
 
-## 1. Infraestrutura de Rede, Rack 24U, Servidor e Cabeamento Cat.6
+> 📄 **Arquivos de Planilha Anexados:**
+> - **Planilha Oficial do TP-Link Omada (com colunas PNCP em laranja e abas de Cobertura/Topologia):** [`CT12- Sala201(GPEI).xlsx`](./CT12-%20Sala201(GPEI).xlsx)
+> - **Planilha consolidada em CSV:** [`BOM-orcamento.csv`](../BOM-orcamento.csv)
 
-Esta primeira parte reúne todos os equipamentos que vão no **Rack Fechado de 24U**, o **Access Point Wi-Fi 6 (`WF01`)** do teto e todo o material de cabeamento estruturado **100% Cat.6** embutido:
+---
 
-| Item | Categoria | Descrição Técnica | Qtd | Valor Unitário (R$) | Valor Total (R$) |
-| :---: | :--- | :--- | :---: | :---: | :---: |
-| **01** | Servidor | **Servidor de Rack 1U Short-Depth (`≤ 430 mm`)** — Mínimo: 2x Intel Xeon, 64GB RAM, 2x SSD NVMe em RAID 1 para rodar a pilha do OpenCloud | `01` | R$ 25.000,00 | R$ 25.000,00 |
-| **02** | Ativos de Rede | **Switch Gerenciável L2/L3 de 48 Portas Gigabit PoE+ e 4 Portas SFP/SFP+** (*TP-Link Omada SG3452P / SG3452XP*) | `01` | R$ 3.500,00 | R$ 3.500,00 |
-| **03** | Segurança | **Firewall Físico Dedicado de Borda Corporativo (Rack 1U)** — Inspeção de pacotes e ACLs Inter-VLAN na Camada de Distribuição | `01` | R$ 4.000,00 | R$ 4.000,00 |
-| **04** | Ativos de Rede | **Roteador Corporativo de Borda Gigabit/SFP** (*TP-Link Omada ER7206*) — Recepção do link da UFES, NAT e DHCP | `01` | R$ 850,00 | R$ 850,00 |
-| **05** | Ativos de Rede | **Access Point Wi-Fi 6 Corporativo de Teto PoE** (*TP-Link Omada EAP620 HD / EAP650*) — Instalado no ponto central `WF01` | `01` | R$ 950,00 | R$ 950,00 |
-| **06** | Ativos de Rede | **Transceivers Módulos SFP / SFP+** (*TP-Link TL-SM5310-T / Fibra e RJ-45*) — Para as portas `SFP 1` (Fibra UFES), `SFP 2` (Servidor 10G) e `SFP 3` (Ponto `WF01`) | `03` | R$ 350,00 | R$ 1.050,00 |
-| **07** | Energia | **NoBreak Senoidal Online Dupla Conversão (Rack 2U)** com autonomia mínima de 30 minutos | `01` | R$ 6.000,00 | R$ 6.000,00 |
-| **08** | Passivos (Rack) | **Rack Fechado 19" (`24U × 570 mm`) + Kit de Acessórios** (`8` Guias de Cabo 1U, `8` Placas Cegas 1U, `2` Bandejas Fixas 1U 20kg, `1` Calha PDU de 6 tomadas 20A e `1` DIO 1U) | `01` | R$ 1.800,00 | R$ 1.800,00 |
-| **09** | Cabeamento | **Caixa de Cabo de Rede Cat.6 UTP CM Anti-chama (305 metros cada)** — `3 caixas` (`915 m` totais) para cobrir com folga os `689,00 m` lançados na sala | `03` | R$ 850,00 | R$ 2.550,00 |
-| **10** | Cabeamento | **Patch Panel Cat.6 de 24 Portas (Rack 19" 1U)** — Terminação dos 48 pontos de bancada (`1201` a `1248`) | `02` | R$ 450,00 | R$ 900,00 |
-| **11** | Infraestrutura | **Lote de Conectividade e Tubulação Embutida** — `48` módulos RJ-45 fêmea Cat.6, `1` conector RJ-45 macho Cat.6, `97` Patch Cords Cat.6 de `2,50 m`, eletrodutos PVC (`3/4"`, `1"`, `1½"`), caixas `4×4"` e espelhos | `Lote` | R$ 1.500,00 | R$ 1.500,00 |
-| **16** | Software Livre | **Ecossistema Open Source Completo** — Ubuntu Server LTS + Docker Compose + Traefik + OpenCloud Core + Radicale + Collabora Online (Zero custo de licença) | `Lote` | R$ 0,00 | R$ 0,00 |
-| **17** | Serviços | **Mão de Obra Especializada** — Rasgos em alvenaria, instalação embutida no forro/piso/bancadas, montagem do rack, configuração lógica e **Certificação Fluke dos 49 pontos Cat.6** | `Lote` | *Sob Consulta* | *Sob Consulta* |
-| — | **SUBTOTAL 1** | **Subtotal de Infraestrutura de Rede, Rack, Servidor e Cabeamento** | — | — | **R$ 48.100,00** |
+## 1. Planilha de Equipamentos no Padrão Omada + Atas Vigentes (PNCP)
+
+Seguindo o padrão de orçamentação pública baseado em **Atas de Registro de Preços Vigentes no PNCP (Portal Nacional de Contratações Públicas)** e na exportação direta do **TP-Link Omada Design Hub**, a tabela abaixo consolida os itens originais da planta física com as colunas de **Tipo de Dispositivo**, **ID de Contratação PNCP** e **Marca/Modelo de Referência**:
+
+| Tipo Original (Omada) | Tipo Dispositivo | Ata Vigente / ID de Contratação PNCP | Descrição e Link de Conferência | Marca / Modelo Referência | Qtd | Cópia Seg. | Total | Preço Unitário | Desconto | Preço Total |
+| :--- | :--- | :---: | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| `ER7206` | **Roteador Corporativo de Borda Gigabit/SFP** | `15303600000108-1-000042/2025` | Roteador Corporativo Gigabit VPN Gateway c/ SFP ([Conferir especificação](https://www.tp-link.com/br/business-networking/omada-sdn-router/er7206/)) | **TP-LINK** — `ER7206` | `1` | `0` | `1` | R$ 850,00 | 0,00% | **R$ 850,00** |
+| `SG3452XP` | **Switch Gerenciável 48 Portas PoE+ (4x SFP+)** | `32752798000114-1-000028/2025` | Switch Gerenciável L2+ 48 Portas Gigabit PoE+ e 4 Portas 10GE SFP+ — Item 2.17.18 Edital ([Conferir especificação](https://www.tp-link.com/br/business-networking/omada-sdn-switch/tl-sg3452xp/)) | **TP-LINK** — `SG3452XP` | `1` | `0` | `1` | R$ 3.500,00 | 0,00% | **R$ 3.500,00** |
+| `EAP620 HD` | **Access Point Wi-Fi 6 de Teto PoE (Ponto WF01)** | `32752798000114-1-000028/2025` | AX1800 Ceiling Mount Wi-Fi 6 Access Point instalado no centro da Sala 201 ([Conferir especificação](https://www.tp-link.com/br/business-networking/omada-sdn-access-point/eap620-hd/)) | **TP-LINK** — `EAP620 HD` | `1` | `0` | `1` | R$ 950,00 | 0,00% | **R$ 950,00** |
+| `EAP115-Wall` | **Kit 48 Pontos RJ-45 Cat.6 (3 Bancadas) + 2 Patch Panels 24p** | `24380571000105-1-000019/2025` | Conjunto de 48 Tomadas RJ-45 Fêmea Cat.6 (distribuídas nas 3 Bancadas da Sala 201) + 2 Patch Panels 24p Cat.6 (`900,00`) + 97 Patch Cords Cat.6 e dutos embutidos (`1.500,00`) — Itens 2.17.1 a 2.17.17 Edital | **FURUKAWA** — `GIGALAN CAT.6` | `1` | `0` | `1` | R$ 2.400,00 | 0,00% | **R$ 2.400,00** |
+| `CAT.5E` *(Upgrade Cat.6)* | **Caixas de Cabo de Rede UTP Cat.6 CM (305m cada)** | `24380571000105-1-000019/2025` | Cabo Par Trançado U/UTP Cat.6 CM Anti-chama (`3 caixas de 305 m = 915 m` para atender os `689,00 m` lançados nos 49 pontos da Sala 201 — Item 2.17.12 Edital) | **FURUKAWA** — `SOHOPULSE CAT.6` | `3` *(915m)* | `0` | `3` *(915m)* | R$ 850,00 | 0,00% | **R$ 2.550,00** |
+| `MMF (OM3/OM4)` | **Módulos Transceivers SFP / Fibra (SFP 1, 2 e 3)** | `32752798000114-1-000028/2025` | Módulos Transceivers SFP/SFP+ 1G/10Gbps + Cordão Óptico Multimodo OM3/OM4 (`2 m`) para interconexão Core-Distribuição-Acesso-Servidor | **TP-LINK** — `TL-SM5310-T` | `3` | `0` | `3` | R$ 350,00 | 0,00% | **R$ 1.050,00** |
+| `SRV-1U-SHORT` | **Servidor Rack 1U Short-Depth (`≤ 430mm`) OpenCloud** | `00394460000141-1-000112/2025` | Servidor Físico 1U Short-Depth (`≤ 430 mm`), 2x Intel Xeon, 64GB RAM ECC, 2x SSD NVMe 2TB em RAID 1 para hospedar o OpenCloud, Collabora e Radicale (Rack `U12`) | **DELL / SUPERMICRO** — `SHORT-DEPTH 1U` | `1` | `0` | `1` | R$ 25.000,00 | 0,00% | **R$ 25.000,00** |
+| `FW-BORDA-1U` | **Firewall Físico Dedicado de Borda Corporativo 1U** | `15303600000108-1-000042/2025` | Appliance de Firewall Físico Dedicado de Borda 1U (Camada de Distribuição — Rack `U21`) para inspeção stateful e controle de ACLs entre VLANs `10`, `20` e `30` | **FORTINET / NETGATE** — `RACK 1U` | `1` | `0` | `1` | R$ 4.000,00 | 0,00% | **R$ 4.000,00** |
+| `UPS-3KVA-2U` | **NoBreak Senoidal Online Dupla Conversão Rack 2U** | `15303600000108-1-000051/2025` | NoBreak (UPS) Senoidal Online Dupla Conversão 3kVA Rack Mount 2U com autonomia mínima de 30 minutos (Rack `U01-U02`) | **APC / SMS** — `SMART-UPS 3000VA` | `1` | `0` | `1` | R$ 6.000,00 | 0,00% | **R$ 6.000,00** |
+| `RACK-24U-570` | **Rack Fechado 19" (`24U × 570mm`) + Kit Acessórios** | `24380571000105-1-000019/2025` | Rack de Piso Fechado 19" (`24U × 570 mm` — Item 2.9.1 Edital) + `8` Guias 1U + `8` Placas Cegas 1U + `2` Bandejas 1U + Calha PDU 6T 20A + DIO 1U | **INTELBRAS** — `RACK 24U 570MM` | `1` | `0` | `1` | R$ 1.800,00 | 0,00% | **R$ 1.800,00** |
+| — | **SUBTOTAL 1 (Taxas de Equipamento de Rede/Rack/Servidor)** | — | **Subtotal de Infraestrutura de Rede, Rack 24U, Servidor 1U e Cabeamento Cat.6** | — | — | — | — | — | — | **R$ 48.100,00** |
 
 ---
 
@@ -27,13 +30,13 @@ Esta primeira parte reúne todos os equipamentos que vão no **Rack Fechado de 2
 
 Esta segunda parte contempla os computadores das 48 posições da Sala 201 (47 alunos + 1 professor), o projetor de teto e a impressora sem fio do laboratório:
 
-| Item | Categoria | Descrição Técnica | Qtd | Valor Unitário (R$) | Valor Total (R$) |
-| :---: | :--- | :--- | :---: | :---: | :---: |
-| **12** | Área de Trabalho (Alunos) | **Desktop Compacto SFF (*Small Form Factor*)** (*Dell OptiPlex / Lenovo ThinkCentre*, Core i5, 16GB RAM, SSD NVMe 512GB) + **Monitor 24" Full HD** + Kit Teclado ABNT2 (c/ numérico) e Mouse | `47` | R$ 4.500,00 | R$ 211.500,00 |
-| **13** | Área de Trabalho (Professor) | **Desktop do Professor (Saída Dual HDMI)** (Core i5, 16GB RAM, SSD NVMe 512GB) + **Monitor 24" Full HD** + Kit Teclado e Mouse Sem Fio (Ponto `1202`) | `01` | R$ 4.800,00 | R$ 4.800,00 |
-| **14** | Apresentação Coletiva | **Projetor Multimídia de Teto Full HD (`≥ 4.000 Lumens`)** (*Epson PowerLite FH52+*) + Suporte de Teto e Cabo HDMI de 15m Embutido | `01` | R$ 5.800,00 | R$ 5.800,00 |
-| **15** | Periféricos | **Impressora Multifuncional Laser Monocromática com Wi-Fi e Duplex** (*Brother DCP-L2540DW / DCP-L1632W*) — Conectada na `VLAN 30` via `WF01` | `01` | R$ 1.650,00 | R$ 1.650,00 |
-| — | **SUBTOTAL 2** | **Subtotal de Computadores, Projetor e Impressora da Sala 201** | — | — | **R$ 223.750,00** |
+| Item | Categoria | Ata Vigente / ID PNCP | Descrição Técnica | Marca / Modelo Referência | Qtd | Valor Unitário (R$) | Valor Total (R$) |
+| :---: | :--- | :---: | :--- | :--- | :---: | :---: | :---: |
+| **12** | Área de Trabalho (Alunos) | `00394460000141-1-000145/2025` | **Desktop Compacto SFF (*Small Form Factor*)** (Core i5, 16GB RAM, SSD NVMe 512GB) + **Monitor 24" Full HD** + Kit Teclado ABNT2 (c/ numérico) e Mouse | **DELL / LENOVO** — `OptiPlex / ThinkCentre SFF` | `47` | R$ 4.500,00 | **R$ 211.500,00** |
+| **13** | Área de Trabalho (Professor) | `00394460000141-1-000145/2025` | **Desktop do Professor (Saída Dual HDMI)** (Core i5, 16GB RAM, SSD NVMe 512GB) + **Monitor 24" Full HD** + Kit Teclado e Mouse Sem Fio (Ponto `1202`) | **DELL / LENOVO** — `SFF Dual-HDMI` | `01` | R$ 4.800,00 | **R$ 4.800,00** |
+| **14** | Apresentação Coletiva | `15303600000108-1-000063/2025` | **Projetor Multimídia de Teto Full HD (`≥ 4.000 Lumens`)** + Suporte Universal de Teto e Cabo HDMI de 15m Embutido | **EPSON** — `PowerLite FH52+` | `01` | R$ 5.800,00 | **R$ 5.800,00** |
+| **15** | Periféricos | `15303600000108-1-000063/2025` | **Impressora Multifuncional Laser Monocromática com Wi-Fi e Duplex** — Conectada na `VLAN 30` via `WF01` (`192.168.30.50`) | **BROTHER** — `DCP-L2540DW` | `01` | R$ 1.650,00 | **R$ 1.650,00** |
+| — | **SUBTOTAL 2** | — | **Subtotal de Computadores, Projetor e Impressora da Sala 201** | — | — | — | **R$ 223.750,00** |
 
 ---
 
@@ -49,5 +52,5 @@ Esta segunda parte contempla os computadores das 48 posições da Sala 201 (47 a
 
 ### Justificativas de Custo-Benefício do Projeto:
 - **Economia com Software Livre (`R$ 0,00`):** Se o laboratório contratasse licenças comerciais equivalentes (ex.: Microsoft 365 / Google Workspace comercial ou Windows Server CALs para 48 máquinas e grupos de pesquisa), haveria um custo anual recorrente elevado. Com a pilha **OpenCloud + Collabora Online + Radicale** rodando no servidor local, o custo de licença é zero.
-- **Economia de Switch Extra com o Uso das Portas SFP/SFP+:** A decisão de usar os **3 módulos Transceivers SFP (`R$ 1.050,00`)** nas portas de uplink do Switch de 48 portas permitiu conectar o **Link da UFES (`SFP 1`)**, o **Servidor 1U em alta velocidade (`SFP 2`)** e o **49º ponto do Access Point `WF01` (`SFP 3`)** sem precisar comprar um segundo switch gerenciável extra.
+- **Economia de Switch Extra com o Uso das Portas SFP/SFP+:** A decisão de usar os **3 módulos Transceivers SFP (`R$ 1.050,00`)** nas portas de uplink do Switch de 48 portas permitiu conectar o **Link de Borda (`SFP 1`)**, o **Servidor 1U em alta velocidade (`SFP 2`)** e o **49º ponto do Access Point `WF01` (`SFP 3`)** sem precisar comprar um segundo switch gerenciável extra.
 - **Dimensionamento Exato de Cabo Cat.6:** Como o projeto executivo exige **689,00 metros** de cabo UTP Cat.6, foram orçadas **3 caixas de 305 metros (`915 metros` no total)**, garantindo a metragem necessária mais uma margem técnica de reserva de `~32%` para manutenções futuras.
