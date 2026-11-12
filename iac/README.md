@@ -113,9 +113,8 @@ curl -k -I https://localhost
 
 ---
 
-## 5. ☁️ Adendo: Rodando na AWS EC2 (Para Testes da Turma)
+## 5. Adendo: Rodando na AWS EC2 (Para Testes da Turma)
 
-Como na disciplina cada aluno testa a infraestrutura dos colegas usando uma máquina virtual na **AWS EC2**, o nosso script `setup-server.sh` foi preparado com duas adaptações bem legais pensando especificamente na nuvem da AWS:
 
 1. **Detecção Automática do IP Público da EC2 + Certificado Let's Encrypt Real:**
    - Na AWS, a placa de rede da máquina tem um IP privado (`172.31.x.x`), mas quem acessa pelo navegador usa o **IP Público** da instância.
