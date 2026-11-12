@@ -113,7 +113,7 @@ curl -k -I https://localhost
 
 ---
 
-## 5. Adendo: Rodando na AWS EC2 (Para Testes da Turma)
+## 5. Adendo: Rodando na AWS EC2
 
 
 1. **Detecção Automática do IP Público da EC2 + Certificado Let's Encrypt Real:**
