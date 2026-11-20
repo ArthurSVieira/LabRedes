@@ -3,134 +3,351 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Documentação OpenCloud — Laboratório CT-12 (Sala 201)</title>
+  <title>NuvemCore — Manual da Solução e Wiki Técnica</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-
   <header class="topbar">
     <button id="menu-toggle" class="menu-btn" aria-label="Abrir sumário">
-      ☰
+      ☰ Sumário
     </button>
-    <span class="topbar-title">Catálogo de Manuais / <strong>OpenCloud (GPEI)</strong></span>
+    <span class="topbar-title">Catálogo de Manuais / <strong>NuvemCore (Baseado em OpenCloud)</strong></span>
   </header>
 
   <div id="sidebar-backdrop" class="backdrop"></div>
 
-
   <aside id="sidebar" class="sidebar">
     <div class="sidebar-header">
       <div>
-        <h2>OpenCloud GPEI</h2>
-        <span class="version">v9.0.0 · Sala 201 (CT-12)</span>
+        <h2>NuvemCore</h2>
+        <span class="version">v1.0 · Motor OpenCloud 9.0</span>
       </div>
       <button id="menu-close" class="close-btn" aria-label="Fechar menu">✕</button>
     </div>
 
     <nav class="sidebar-nav">
-      <p class="nav-section">Documentação</p>
-      <a href="#sobre">Visão Geral do Software</a>
-      <a href="#arquitetura">Arquitetura (Containers)</a>
-      <a href="#requisitos">Requisitos de Sistema</a>
+      <p class="nav-section">Solução</p>
+      <a href="#sobre">1. Resumo da Solução</a>
+      <a href="#arquitetura">2. Arquitetura (Containers)</a>
+      <a href="#requisitos">3. Requisitos de Hardware</a>
 
       <p class="nav-section">Implantação (IaC)</p>
-      <a href="#instalacao-ubuntu">Instalação no Ubuntu</a>
-      <a href="#adendo-aws">Rodando na AWS EC2</a>
-      <a href="#como-testar">Como Testar o Serviço</a>
+      <a href="#instalacao-ubuntu">4. Instalação no Ubuntu</a>
+      <a href="#adendo-aws">5. Rodando na AWS EC2</a>
+      <a href="#como-testar">6. Como Testar o Serviço</a>
 
-      <p class="nav-section">Uso e Treinamento</p>
-      <a href="#video">Vídeo Demonstrativo</a>
-      <a href="#guia-usuario">Guia para Usuários</a>
-      <a href="#faq">Dúvidas Frequentes (FAQ)</a>
+      <p class="nav-section">Treinamento</p>
+      <a href="#video">7. Vídeos de Treinamento</a>
+      <a href="#guia-usuario">8. Manual de Primeiros Passos</a>
+      <a href="#faq">9. Dúvidas Frequentes (FAQ)</a>
     </nav>
 
     <div class="sidebar-footer">
-      <p>Autor: <strong>Arthur Vieira</strong></p>
+      <p>Desenvolvido por: <strong>Arthur Vieira</strong></p>
       <p>Lab. de Redes — DCOMP/UFS</p>
     </div>
   </aside>
 
   <main class="content">
     <header class="doc-header">
-      <h1>Manual Técnico e Wiki do OpenCloud</h1>
+      <h1>NuvemCore — Manual da Solução e Treinamento</h1>
       <p class="lead">
-        Guia de implantação em Ubuntu Server LTS, arquitetura em containers Docker e manual de uso da nuvem privada projetada para o Grupo de Pesquisa em Engenharia Industrial (GPEI — Sala 201).
+        Plataforma corporativa e acadêmica de nuvem privada, edição colaborativa de documentos em tempo real e agenda compartilhada, desenvolvida e empacotada sobre o ecossistema open-source OpenCloud para implantação automatizada em Ubuntu Server LTS.
       </p>
     </header>
 
     <section id="sobre">
-      <h2>1. Visão Geral do Software</h2>
+      <h2>1. Resumo da Solução (Visão para Gestores)</h2>
       <p>
-        O <strong>OpenCloud</strong> é uma plataforma open-source de armazenamento em nuvem privada e colaboração em arquivos escrita em <strong>Go</strong>. Diferente de soluções tradicionais como o Nextcloud (que exigem PHP e banco de dados relacional MySQL/PostgreSQL), o OpenCloud utiliza uma arquitetura <em>database-less</em> baseada diretamente no sistema de arquivos (DecomposedFS).
+        O <strong>NuvemCore</strong> é uma solução completa de armazenamento em nuvem privada e produtividade colaborativa pensada para organizações e laboratórios que precisam substituir assinaturas caras de nuvem pública (como Microsoft 365 ou Google Workspace) mantendo 100% da soberania e privacidade dos seus dados em infraestrutura própria.
       </p>
       <p>
-        No projeto do laboratório da Sala 201, ele foi escolhido para permitir que professores, pesquisadores e alunos compartilhem dados de pesquisa em pastas isoladas (<em>Spaces</em>) e editem planilhas e relatórios simultaneamente pelo navegador, sem depender de licenças pagas.
+        Construído sobre o motor open-source <strong>OpenCloud</strong> (escrito em <strong>Go</strong> com arquitetura <em>database-less</em> baseada diretamente no sistema de arquivos DecomposedFS), o NuvemCore entrega uma pilha unificada e pronta para uso que integra:
       </p>
+      <ul>
+        <li><strong>Armazenamento e Spaces por Equipe:</strong> Diretórios departamentais independentes com controle granular de permissões (leitura, edição e gerência) e cotas de disco;</li>
+        <li><strong>Suíte Office Colaborativa no Navegador:</strong> Criação e edição simultânea de planilhas (<code>.xlsx</code>), documentos de texto (<code>.docx</code>) e apresentações (<code>.pptx</code>) sem instalar software nas máquinas clientes;</li>
+        <li><strong>Agenda e Contatos Integrados:</strong> Servidor CalDAV/CardDAV nativo para reserva de salas, recursos e compromissos de equipe;</li>
+        <li><strong>Segurança e Zero Custo de Licenciamento:</strong> Criptografia TLS automática na borda, firewall configurado por padrão e custo zero de licenças por usuário.</li>
+      </ul>
     </section>
 
     <section id="arquitetura">
       <h2>2. Arquitetura dos Serviços (Docker Compose)</h2>
       <p>
-        A infraestrutura como código (pasta <code>/iac</code>) sobe 5 serviços interligados em uma rede bridge isolada (<code>opencloud-net</code>), onde apenas o proxy reverso fica exposto no servidor:
+        A automação do NuvemCore (pasta <code>/iac</code>) orquestra 5 microsserviços isolados em uma rede bridge privada (<code>opencloud-net</code>), onde apenas o proxy reverso de borda fica exposto no servidor host:
       </p>
 
       <table class="doc-table">
         <thead>
           <tr>
             <th>Container</th>
-            <th>Imagem Oficial</th>
+            <th>Imagem Base</th>
             <th>Porta Interna</th>
-            <th>Função no Ambiente</th>
+            <th>Papel na Solução NuvemCore</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><code>gpei-traefik</code></td>
+            <td><code>nuvemcore-traefik</code></td>
             <td><code>traefik:v3.7.16</code></td>
             <td><code>80 / 443</code> (Host)</td>
-            <td>Proxy reverso de borda e emissão automática de certificados TLS (Let's Encrypt).</td>
+            <td>Proxy reverso de borda, roteamento por domínio e emissão automática de certificados HTTPS (Let's Encrypt).</td>
           </tr>
           <tr>
-            <td><code>gpei-opencloud</code></td>
+            <td><code>nuvemcore-opencloud</code></td>
             <td><code>opencloudeu/opencloud-rolling:9.0.0</code></td>
             <td><code>9200/tcp</code></td>
-            <td>Núcleo do sistema, provedor de login (IDP), Spaces e conector WOPI embutido.</td>
+            <td>Motor principal em Go, provedor de identidade (IDP), gestão de Spaces e servidor WOPI embutido.</td>
           </tr>
           <tr>
-            <td><code>gpei-collabora</code></td>
+            <td><code>nuvemcore-collabora</code></td>
             <td><code>collabora/code:26.04.5.2.1</code></td>
             <td><code>9980/tcp</code></td>
-            <td>Edição colaborativa de documentos Office (<code>.xlsx</code>, <code>.docx</code>, <code>.pptx</code>) no navegador.</td>
+            <td>Edição colaborativa de documentos Office (<code>.xlsx</code>, <code>.docx</code>, <code>.pptx</code>) integrada ao navegador.</td>
           </tr>
           <tr>
-            <td><code>gpei-yjs</code></td>
+            <td><code>nuvemcore-yjs</code></td>
             <td><code>opencloudeu/yjs:1.1.1</code></td>
             <td><code>1234/tcp</code></td>
-            <td>Servidor WebSocket para sincronização simultânea em tempo real (rota <code>/yjs</code>).</td>
+            <td>Servidor WebSocket para sincronização simultânea livre de conflitos em tempo real (rota <code>/yjs</code>).</td>
           </tr>
           <tr>
-            <td><code>gpei-radicale</code></td>
+            <td><code>nuvemcore-radicale</code></td>
             <td><code>tomsquest/docker-radicale:latest</code></td>
             <td><code>5232/tcp</code></td>
-            <td>Servidor CalDAV/CardDAV para agenda de bancadas e reuniões (rota <code>/caldav/</code>).</td>
+            <td>Servidor CalDAV/CardDAV para agendas e contatos compartilhados (rota <code>/caldav/</code>).</td>
           </tr>
         </tbody>
       </table>
     </section>
 
     <section id="requisitos">
-      <h2>3. Requisitos de Sistema (Ubuntu Server)</h2>
+      <h2>3. Requisitos Mínimos de Hardware e Sistema</h2>
+      <p>
+        Para implantar o serviço <strong>NuvemCore</strong> em um servidor físico ou máquina virtual, verifique os requisitos abaixo:
+      </p>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Recurso</th>
+            <th>Mínimo (Ambiente de Teste / Lab)</th>
+            <th>Recomendado (Produção ~50 Estações)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Sistema Operacional</strong></td>
+            <td>Ubuntu Server 22.04 / 24.04 LTS (64-bit)</td>
+            <td>Ubuntu Server 24.04 LTS (64-bit)</td>
+          </tr>
+          <tr>
+            <td><strong>Processador (CPU)</strong></td>
+            <td>2 vCPUs (x86_64)</td>
+            <td>2x Intel Xeon / 8+ núcleos</td>
+          </tr>
+          <tr>
+            <td><strong>Memória RAM</strong></td>
+            <td>2 GB RAM (+ 4 GB de Swap criado pelo script)</td>
+            <td>32 GB a 64 GB RAM ECC</td>
+          </tr>
+          <tr>
+            <td><strong>Armazenamento (Disco)</strong></td>
+            <td><strong>20 GB livres</strong> (~3 GB SO + 4 GB Swap + ~3,5 GB imagens Docker + dados)</td>
+            <td><strong>2 TB úteis em RAID 1</strong> (2x SSD NVMe de 2 TB espelhados)</td>
+          </tr>
+          <tr>
+            <td><strong>Rede e Portas</strong></td>
+            <td>Portas <code>22/TCP</code>, <code>80/TCP</code> e <code>443/TCP</code> liberadas</td>
+            <td>Interface Gigabit ou SFP+ 10GbE</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="instalacao-ubuntu">
+      <h2>4. Passo a Passo de Implantação no Ubuntu Server (IaC)</h2>
+      <p>
+        Toda a automação do NuvemCore está no diretório <code>/iac</code> do repositório. O script <code>setup-server.sh</code> prepara o Ubuntu Server do zero: cria 4 GB de Swap, instala o Docker e o Docker Compose, ativa o firewall <code>UFW</code> (liberando apenas as portas 22, 80 e 443), detecta o IP da máquina para configurar o domínio <code>nuvemcore.&lt;IP&gt;.nip.io</code> e inicia os containers.
+      </p>
+
+      <h3>Passo 1 — Clonar o repositório e acessar a pasta de automação</h3>
+      <div class="code-box">
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        <pre><code>git clone https://github.com/DCOMP-UFS/lab-redes-turma1-2026-2-repo-ArthurSVieira.git
+cd lab-redes-turma1-2026-2-repo-ArthurSVieira/iac</code></pre>
+      </div>
+
+      <h3>Passo 2 — Executar o instalador automatizado do NuvemCore</h3>
+      <div class="code-box">
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        <pre><code>chmod +x setup-server.sh
+sudo ./setup-server.sh</code></pre>
+      </div>
+    </section>
+
+    <section id="adendo-aws">
+      <h2>5. Adendo: Rodando na Infraestrutura de Testes (AWS EC2)</h2>
+      <p>
+        Para testes em instâncias EC2 na AWS, o instalador do NuvemCore identifica automaticamente o IP público da máquina (via <code>checkip.amazonaws.com</code>) e configura o Traefik para emitir um certificado HTTPS válido junto ao <strong>Let's Encrypt</strong>. Antes de rodar o script na AWS, verifique:
+      </p>
       <ul>
-        <li><strong>Sistema Operacional:</strong> Ubuntu Server 22.04 LTS ou 24.04 LTS (64-bit).</li>
-        <li><strong>Espaço em Disco (Armazenamento):</strong> Mínimo de <strong>20 GB livres</strong> para testes (~3 GB do SO + 4 GB de Swap criado pelo script + ~3,5 GB das imagens Docker + espaço para dados). No servidor físico 1U da Sala 201, utilizam-se <strong>2 TB úteis em RAID 1</strong> (2x SSD NVMe).</li>
-        <li><strong>Memória RAM e CPU:</strong> Mínimo de 2 vCPUs e 2 GB de RAM (com Swap de 4 GB ativo); recomendado 4 GB de RAM.</li>
-        <li><strong>Portas de Rede:</strong> Portas <code>22/TCP</code> (SSH), <code>80/TCP</code> (HTTP) e <code>443/TCP</code> (HTTPS) liberadas.</li>
+        <li><strong>Disco (Volume EBS):</strong> Altere o tamanho padrão de <code>8 GB</code> para pelo menos <strong><code>20 GB (gp3)</code></strong> ao criar a instância EC2 (permanece dentro do limite gratuito do Free Tier e comporta o Swap de 4 GB + imagens Docker).</li>
+        <li><strong>Security Group (Inbound Rules):</strong> Libere as portas de entrada <code>22/TCP</code> (SSH), <code>80/TCP</code> (HTTP — indispensável para a validação ACME do Let's Encrypt) e <code>443/TCP</code> (HTTPS).</li>
+        <li><strong>Reinício da EC2 (Mudança de IP Público):</strong> Caso a instância seja desligada e ligada novamente recebendo um novo IP público, basta executar <code>sudo ./setup-server.sh</code> outra vez. O script detecta a alteração de domínio e reinicializa os volumes do IDP automaticamente.</li>
       </ul>
     </section>
 
-    <!-- AQUI ENTRARÃO AS SEÇÕES 4 A 9 NO PRÓXIMO PASSO -->
+    <section id="como-testar">
+      <h2>6. Como Testar o Funcionamento do Software</h2>
+      <p>
+        Assim que o script finalizar, ele exibirá no terminal a URL exata configurada para o servidor. Aguarde cerca de 15 segundos para a emissão do certificado TLS e realize os testes abaixo:
+      </p>
 
+      <h3>6.1. Comandos Básicos de Verificação no Terminal</h3>
+      <div class="code-box">
+        <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+        <pre><code>sudo docker ps
+sudo docker logs --tail 25 nuvemcore-opencloud
+sudo docker logs --tail 20 nuvemcore-traefik
+curl -k -I https://localhost</code></pre>
+      </div>
+
+      <h3>6.2. Acesso e Teste via Navegador Web (Credenciais Padrão)</h3>
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Recurso</th>
+            <th>Endereço / Credencial</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Painel Web Principal (NuvemCore)</strong></td>
+            <td><code>https://nuvemcore.&lt;IP-DO-SERVIDOR&gt;.nip.io</code></td>
+          </tr>
+          <tr>
+            <td><strong>Servidor de Agenda (CalDAV)</strong></td>
+            <td><code>https://nuvemcore.&lt;IP-DO-SERVIDOR&gt;.nip.io/caldav/</code></td>
+          </tr>
+          <tr>
+            <td><strong>Usuário Administrador</strong></td>
+            <td><code>admin</code></td>
+          </tr>
+          <tr>
+            <td><strong>Senha Inicial</strong></td>
+            <td><code>NuvemCore2026</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="video">
+      <h2>7. Vídeos de Treinamento Rápido (Screencasts)</h2>
+      <p>
+        Abaixo estão os tutoriais em vídeo demonstrando a implantação do <strong>NuvemCore</strong> em um servidor Ubuntu e o uso das principais funcionalidades da plataforma:
+      </p>
+
+      <div class="video-container">
+        <div class="video-placeholder">
+          <p class="video-title">🎬 Demonstração Completa: Implantação e Uso do NuvemCore</p>
+          <p class="video-desc">
+            Execução comentada do script <code>setup-server.sh</code> no Ubuntu Server, verificação dos containers Docker, login no painel web, criação de Spaces departamentais e edição simultânea de planilhas e documentos no navegador.
+          </p>
+          <a href="#" target="_blank" class="video-link-btn">▶ Assistir Vídeo Demonstrativo</a>
+        </div>
+      </div>
+
+      <table class="doc-table">
+        <thead>
+          <tr>
+            <th>Tutorial Rápido</th>
+            <th>Conteúdo Abordado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Primeiro Acesso e Spaces</strong></td>
+            <td>Como autenticar no painel web, organizar arquivos no <em>Personal Space</em> e criar <em>Spaces</em> compartilhados por equipe ou projeto.</td>
+          </tr>
+          <tr>
+            <td><strong>2. Edição Colaborativa (Collabora)</strong></td>
+            <td>Como criar e editar planilhas (<code>.xlsx</code>), textos (<code>.docx</code>) e apresentações (<code>.pptx</code>) simultaneamente direto pelo navegador.</td>
+          </tr>
+          <tr>
+            <td><strong>3. Compartilhamento Seguro e Agenda</strong></td>
+            <td>Como gerar links protegidos por senha, definir permissões (<em>Viewer</em>, <em>Editor</em>, <em>Manager</em>) e conectar a agenda CalDAV.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="guia-usuario">
+      <h2>8. Manual de Primeiros Passos (Estações de Trabalho)</h2>
+      <p>
+        Siga o passo a passo abaixo para acessar e utilizar o <strong>NuvemCore</strong> a partir de qualquer computador da área de trabalho:
+      </p>
+
+      <ol class="steps-list">
+        <li>
+          <strong>Acesso via Navegador Web:</strong> Abra o navegador (Chrome, Firefox ou Edge) na estação de trabalho e digite o endereço do servidor NuvemCore: <code>https://nuvemcore.&lt;IP-DO-SERVIDOR&gt;.nip.io</code> (na rede local do laboratório: <code>https://nuvemcore.192.168.20.10.nip.io</code>).
+        </li>
+        <li>
+          <strong>Login e Troca de Senha:</strong> Informe seu usuário e senha (para o administrador inicial, utilize usuário <code>admin</code> e senha <code>NuvemCore2026</code>). Para alterar sua senha ou idioma da interface, clique no avatar no canto superior direito &rarr; <em>Configurações de Conta</em>.
+        </li>
+        <li>
+          <strong>Navegando entre Spaces Pessoais e de Equipe:</strong> No menu lateral esquerdo:
+          <ul>
+            <li><strong>Personal (Pessoal):</strong> Sua pasta privada individual;</li>
+            <li><strong>Spaces (Espaços):</strong> Pastas compartilhadas da sua equipe ou projeto. Diferente de pastas comuns, os arquivos dentro de um <em>Space</em> pertencem à equipe e não são perdidos caso um membro saia do projeto.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Criando e Editando Arquivos Office na Web:</strong> Dentro de qualquer pasta, clique no botão <strong>"+ Novo"</strong> e selecione <em>Documento</em>, <em>Planilha</em> ou <em>Apresentação</em>. O editor online abrirá na mesma aba, salvando automaticamente todas as alterações no servidor.
+        </li>
+        <li>
+          <strong>Acesso via Cliente Desktop e Agenda CalDAV (Opcional):</strong>
+          <ul>
+            <li>Para sincronizar arquivos automaticamente com uma pasta local do computador, instale o <a href="https://owncloud.com/desktop-app/" target="_blank">Desktop Sync Client</a> e informe a URL do servidor NuvemCore.</li>
+            <li>Para sincronizar calendários e contatos no Thunderbird ou smartphone (DAVx⁵), adicione uma conta CalDAV apontando para <code>https://nuvemcore.&lt;IP-DO-SERVIDOR&gt;.nip.io/caldav/</code>.</li>
+          </ul>
+        </li>
+      </ol>
+    </section>
+
+    <section id="faq">
+      <h2>9. Dúvidas Frequentes (FAQ) e Suporte</h2>
+
+      <details class="faq-item">
+        <summary>Excluí ou alterei um arquivo importante por engano. Como recuperar?</summary>
+        <p>
+          O NuvemCore possui lixeira e controle de versões nativos. Para recuperar um arquivo apagado, acesse a aba <strong>Lixeira (Trashbin)</strong> no menu esquerdo e clique em <em>Restaurar</em>. Para reverter um arquivo editado para uma versão anterior, clique no menu de três pontos (<code>...</code>) do arquivo &rarr; <strong>Versões</strong>.
+        </p>
+      </details>
+
+      <details class="faq-item">
+        <summary>É necessário instalar o Microsoft Office ou LibreOffice nos computadores dos usuários?</summary>
+        <p>
+          Não. O serviço <code>nuvemcore-collabora</code> processa e renderiza arquivos <code>.docx</code>, <code>.xlsx</code>, <code>.pptx</code>, <code>.odt</code> e <code>.ods</code> diretamente no navegador via protocolo WOPI, permitindo edição conjunta em tempo real.
+        </p>
+      </details>
+
+      <details class="faq-item">
+        <summary>Por que as portas internas (9200, 9980, 5232) não respondem diretamente pelo IP?</summary>
+        <p>
+          Por arquitetura de segurança (Defesa em Profundidade), o firewall do servidor bloqueia o acesso externo às portas internas dos containers. Todas as conexões passam exclusivamente pela porta <code>443 (HTTPS)</code> através do proxy reverso <code>nuvemcore-traefik</code>.
+        </p>
+      </details>
+
+      <div class="support-box">
+        <h3>Suporte Técnico e Administração do Serviço</h3>
+        <p>
+          <strong>Suporte Nível 1 (Gestão de Usuários e Spaces):</strong> Criação de contas, redefinição de senhas, ajuste de cotas de armazenamento e permissões de grupos pelo painel web administrativo.<br>
+          <strong>Suporte Nível 2 (Infraestrutura e Containers):</strong> Monitoramento dos containers via Docker Compose (<code>/iac</code>), verificação de certificado TLS e manutenção dos volumes persistentes em RAID 1.
+        </p>
+      </div>
+    </section>
   </main>
 
   <script src="js/script.js"></script>

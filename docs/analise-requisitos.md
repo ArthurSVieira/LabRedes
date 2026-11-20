@@ -1,4 +1,4 @@
-# Análise de Requisitos — Laboratório CT-12 (Sala 201) & OpenCloud
+# Análise de Requisitos — Laboratório CT-12 (Sala 201) & Solução NuvemCore
 
 ## 1. Definição Inicial do Escopo e Principais Objetivos
 
@@ -11,7 +11,7 @@
 
 ### 1.2 Objetivos Principais
 1. **Reforma da Infraestrutura de Rede (100% Cat.6 e Embutida):** Retirar toda a instalação antiga aparente e refazer o cabeamento estruturado em padrão **100% Cat.6** totalmente embutido (forro, paredes, piso e dentro das bancadas), garantindo **49 pontos de rede certificados** (48 nas mesas + 1 no teto para Wi-Fi).
-2. **Implantação do Serviço OpenCloud (Software Livre):** Subir um servidor local no próprio rack do laboratório rodando o **OpenCloud** via Docker Compose, oferecendo armazenamento em nuvem privada, edição colaborativa de documentos em tempo real (`.xlsx`, `.docx`, `.pptx`) e calendário compartilhado para as equipes.
+2. **Implantação da Solução NuvemCore (Baseada em Software Livre OpenCloud):** Subir um servidor local no próprio rack do laboratório rodando o serviço **NuvemCore** (plataforma de nuvem privada construída sobre o motor open-source **OpenCloud** via Docker Compose), oferecendo armazenamento em nuvem privada, edição colaborativa de documentos em tempo real (`.xlsx`, `.docx`, `.pptx`) e calendário compartilhado para as equipes.
 
 ---
 

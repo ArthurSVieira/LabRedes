@@ -78,14 +78,14 @@ Para manter a organização e a segurança, os 4 serviços da aplicação rodam 
 flowchart TD
     Clients["💻 47 PCs Alunos (VLAN 30) / PC Professor (VLAN 10) / Wi-Fi WF01"]
     
-    subgraph Host["🖥️ VLAN 20: Servidor Físico 1U Short-Depth (IP: 192.168.20.10 - Porta SFP 2)"]
+    subgraph Host["🖥️ VLAN 20: Servidor Físico 1U Short-Depth — Solução NuvemCore (IP: 192.168.20.10 - Porta SFP 2)"]
         UFW["🛡️ Firewall Host (UFW / iptables)<br/>Libera apenas HTTPS (80/443) e SSH restrito à VLAN 10"]
         
-        subgraph Docker["🐳 Containers Docker Compose (Rede isolada: opencloud-net)"]
-            Traefik["1. Traefik (Proxy Reverso & SSL/HTTPS - Portas 80/443)"]
-            OpenCloud["2. OpenCloud Core (opencloudeu/opencloud :9200)<br/>• Login / IDP Embutido<br/>• Grupos: professores, pesquisadores, alunos<br/>• Spaces de Arquivos"]
-            Collabora["4. Collabora Online + WOPI (:9980)<br/>(collabora/code + cs3org/wopiserver)<br/>• Edição simultânea (.xlsx, .docx, .pptx)"]
-            Radicale["3. Radicale (opencloudeu/radicale :5232)<br/>• Calendários dos Grupos (CalDAV)"]
+        subgraph Docker["🐳 Containers NuvemCore / Docker Compose (Rede isolada: opencloud-net)"]
+            Traefik["1. nuvemcore-traefik (Proxy Reverso & SSL/HTTPS - Portas 80/443)"]
+            OpenCloud["2. nuvemcore-opencloud (Motor OpenCloud 9 :9200)<br/>• Login / IDP Embutido + WOPI Server<br/>• Grupos: professores, pesquisadores, alunos<br/>• Spaces de Arquivos"]
+            Collabora["4. nuvemcore-collabora + Yjs (:9980 / :1234)<br/>(collabora/code + proof-key + yjs)<br/>• Edição simultânea (.xlsx, .docx, .pptx)"]
+            Radicale["3. nuvemcore-radicale (Radicale :5232)<br/>• Calendários dos Grupos (CalDAV)"]
         end
     end
 

@@ -1,10 +1,9 @@
 # ==============================================================================
-# Docker Compose — Ecossistema OpenCloud (Laboratório CT-12 Sala 201 - GPEI)
-# Baseado na distribuição oficial opencloud-compose (OpenCloud 9.0.0)
+# Docker Compose — Solução NuvemCore (Baseada no motor OpenCloud 9.0.0)
 # ==============================================================================
 # Arquitetura em microsserviços isolados na rede interna 'opencloud-net':
 #   1. traefik     -> Proxy Reverso de borda e terminação TLS/Let's Encrypt (80/443)
-#   2. opencloud   -> Núcleo em Go (database-less), IDP, Spaces RBAC e WOPI Server
+#   2. opencloud   -> Motor NuvemCore em Go (database-less), IDP, Spaces e WOPI
 #   3. radicale    -> Servidor de Calendário e Contatos (CalDAV/CardDAV)
 #   4. collabora   -> Edição simultânea no navegador (.xlsx, .docx, .pptx) + Proof Key
 #   5. yjs         -> Sincronização colaborativa WebSockets em tempo real
@@ -16,12 +15,12 @@ services:
   # ----------------------------------------------------------------------------
   traefik:
     image: traefik:v3.7.16
-    container_name: gpei-traefik
+    container_name: nuvemcore-traefik
     restart: always
     networks:
       opencloud-net:
         aliases:
-          - ${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}
+          - ${OC_DOMAIN:-nuvemcore.192.168.20.10.nip.io}
           - ${COLLABORA_DOMAIN:-collabora.192.168.20.10.nip.io}
     entrypoint: ["/bin/sh", "/opt/traefik/bin/docker-entrypoint-override.sh"]
     environment:
@@ -41,11 +40,11 @@ services:
       - "traefik-certs:/certs"
 
   # ----------------------------------------------------------------------------
-  # 2. OPENCLOUD CORE — Nuvem Privada (Go / Database-less / IDP / WOPI Server)
+  # 2. NUVEMCORE ENGINE (OpenCloud Core) — Nuvem Privada (Go / IDP / WOPI Server)
   # ----------------------------------------------------------------------------
   opencloud:
     image: opencloudeu/opencloud-rolling:9.0.0
-    container_name: gpei-opencloud
+    container_name: nuvemcore-opencloud
     user: "1000:1000"
     restart: always
     networks:
@@ -54,29 +53,30 @@ services:
       - /bin/sh
     command: ["-c", "opencloud init || true; opencloud server"]
     environment:
-      OC_URL: https://${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}
+      OC_URL: https://${OC_DOMAIN:-nuvemcore.192.168.20.10.nip.io}
       OC_LOG_LEVEL: info
       PROXY_TLS: "false"
       OC_INSECURE: "${INSECURE:-true}"
       IDM_CREATE_DEMO_USERS: "false"
-      IDM_ADMIN_PASSWORD: "${INITIAL_ADMIN_PASSWORD:-Gpei@Cloud2025!}"
+      IDM_ADMIN_PASSWORD: "${INITIAL_ADMIN_PASSWORD:-NuvemCore2026}"
+      OC_PASSWORD_POLICY_MIN_SPECIAL_CHARACTERS: "0"
       FRONTEND_ARCHIVER_MAX_SIZE: "10000000000"
       PROXY_CSP_CONFIG_FILE_LOCATION: /etc/opencloud/csp.yaml
       OC_PASSWORD_POLICY_BANNED_PASSWORDS_LIST: banned-password-list.txt
       OC_SHARING_PUBLIC_SHARE_MUST_HAVE_PASSWORD: "true"
-      # Serviço WOPI (collaboration) embutido no processo principal do OpenCloud 9
+      # Serviço WOPI (collaboration) embutido no processo principal
       COLLABORA_DOMAIN: ${COLLABORA_DOMAIN:-collabora.192.168.20.10.nip.io}
       OC_ADD_RUN_SERVICES: "collaboration"
       FRONTEND_APP_HANDLER_SECURE_VIEW_APP_ADDR: eu.opencloud.api.collaboration
       GRAPH_AVAILABLE_ROLES: "b1e2218d-eef8-4d4c-b82d-0f1a1b48f3b5,a8d5fe5e-96e3-418d-825b-534dbdf22b99,fb6c3e19-e378-47e5-b277-9732f9de6e21,58c63c02-1d89-4572-916a-870abc5a1b7d,2d00ce52-1fc2-4dbc-8b95-a73b73395f5a,1c996275-f1c9-4e71-abdf-a42f6495e960,312c0871-5ef7-4b3a-85b6-0e4074c64049,aa97fe03-7980-45ac-9e50-b325749fd7e6"
-      COLLABORATION_WOPI_SRC: https://${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}
+      COLLABORATION_WOPI_SRC: https://${OC_DOMAIN:-nuvemcore.192.168.20.10.nip.io}
       COLLABORATION_APP_NAME: "CollaboraOnline"
       COLLABORATION_APP_PRODUCT: "Collabora"
       COLLABORATION_APP_ADDR: https://${COLLABORA_DOMAIN:-collabora.192.168.20.10.nip.io}
       COLLABORATION_APP_ICON: https://${COLLABORA_DOMAIN:-collabora.192.168.20.10.nip.io}/favicon.ico
       COLLABORATION_APP_INSECURE: "${INSECURE:-true}"
       COLLABORATION_CS3API_DATAGATEWAY_INSECURE: "${INSECURE:-true}"
-      WEB_OPTION_YJS_SERVER_URL: wss://${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}/yjs
+      WEB_OPTION_YJS_SERVER_URL: wss://${OC_DOMAIN:-nuvemcore.192.168.20.10.nip.io}/yjs
     volumes:
       - ./config/opencloud/csp.yaml:/etc/opencloud/csp.yaml:ro
       - ./config/opencloud/apps.yaml:/etc/opencloud/apps.yaml:ro
@@ -91,7 +91,7 @@ services:
       - "traefik.http.middlewares.hsts-header.headers.stsPreload=true"
       - "traefik.http.middlewares.hsts-header.headers.forceSTSHeader=true"
       - "traefik.http.routers.opencloud.entrypoints=https"
-      - "traefik.http.routers.opencloud.rule=Host(`${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}`)"
+      - "traefik.http.routers.opencloud.rule=Host(`${OC_DOMAIN:-nuvemcore.192.168.20.10.nip.io}`)"
       - "traefik.http.routers.opencloud.service=opencloud"
       - "traefik.http.routers.opencloud.middlewares=hsts-header"
       - "traefik.http.services.opencloud.loadbalancer.server.port=9200"
@@ -102,7 +102,7 @@ services:
   # ----------------------------------------------------------------------------
   radicale:
     image: tomsquest/docker-radicale:latest
-    container_name: gpei-radicale
+    container_name: nuvemcore-radicale
     restart: always
     networks:
       - opencloud-net
@@ -117,7 +117,7 @@ services:
   # ----------------------------------------------------------------------------
   collabora-proof-key:
     image: alpine/openssl:3.5.9
-    container_name: gpei-collabora-proof-key
+    container_name: nuvemcore-collabora-proof-key
     entrypoint: ["/bin/sh"]
     command:
       - -ec
@@ -137,7 +137,7 @@ services:
 
   collabora:
     image: collabora/code:26.04.5.2.1
-    container_name: gpei-collabora
+    container_name: nuvemcore-collabora
     restart: always
     networks:
       - opencloud-net
@@ -145,17 +145,17 @@ services:
       collabora-proof-key:
         condition: service_completed_successfully
     environment:
-      aliasgroup1: https://${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}
+      aliasgroup1: https://${OC_DOMAIN:-nuvemcore.192.168.20.10.nip.io}
       extra_params: >
         --o:ssl.enable=false
         --o:ssl.ssl_verification=false
         --o:ssl.termination=true
         --o:welcome.enable=false
-        --o:net.frame_ancestors=${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}
-        --o:net.lok_allow.host[14]=${OC_DOMAIN:-opencloud.192.168.20.10.nip.io}
+        --o:net.frame_ancestors=${OC_DOMAIN:-nuvemcore.192.168.20.10.nip.io}
+        --o:net.lok_allow.host[14]=${OC_DOMAIN:-nuvemcore.192.168.20.10.nip.io}
         --o:home_mode.enable=false
       username: admin
-      password: "${INITIAL_ADMIN_PASSWORD:-Gpei@Cloud2025!}"
+      password: "${INITIAL_ADMIN_PASSWORD:-NuvemCore2026}"
     cap_add:
       - SYS_ADMIN
     security_opt:
@@ -179,7 +179,7 @@ services:
 
   yjs:
     image: opencloudeu/yjs:1.1.1
-    container_name: gpei-yjs
+    container_name: nuvemcore-yjs
     user: "1000:1000"
     restart: always
     networks:
