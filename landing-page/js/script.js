@@ -1,25 +1,3 @@
-const menuToggle = document.getElementById('menu-toggle');
-const menuClose = document.getElementById('menu-close');
-const sidebar = document.getElementById('sidebar');
-const backdrop = document.getElementById('sidebar-backdrop');
-const navLinks = document.querySelectorAll('.sidebar-nav a');
-
-function toggleMenu() {
-  sidebar.classList.toggle('open');
-  backdrop.classList.toggle('active');
-}
-
-menuToggle.addEventListener('click', toggleMenu);
-menuClose.addEventListener('click', toggleMenu);
-backdrop.addEventListener('click', toggleMenu);
-
-navLinks.forEach((link) => {
-  link.addEventListener('click', () => {
-    sidebar.classList.remove('open');
-    backdrop.classList.remove('active');
-  });
-});
-
 function copyCode(button) {
   const codeElement = button.parentElement.querySelector('code');
   navigator.clipboard.writeText(codeElement.innerText).then(() => {
@@ -29,4 +7,20 @@ function copyCode(button) {
       button.innerText = originalText;
     }, 1800);
   });
+}
+
+function openTab(event, tabId) {
+  const panels = document.querySelectorAll('.tab-panel');
+  const buttons = document.querySelectorAll('.tab-btn');
+
+  panels.forEach((panel) => {
+    panel.classList.remove('active');
+  });
+
+  buttons.forEach((btn) => {
+    btn.classList.remove('active');
+  });
+
+  document.getElementById(tabId).classList.add('active');
+  event.currentTarget.classList.add('active');
 }
